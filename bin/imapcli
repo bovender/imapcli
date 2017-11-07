@@ -48,22 +48,36 @@ switch [:v,:verbose], negatable: false
 desc 'Tests if the server is available and log-in succeeds with the credentials'
 command :check do |c|
   c.action do |global_options,options,args|
+    if @client.login
+      @prompt.say 'login successful'
+    else
+      @prompt.say 'login failed'
+    end
   end
 end
 
 desc 'Prints information about the server'
 command :info do |c|
   c.action do |global_options,options,args|
-    puts "info command ran"
+    if @client.login
+      @prompt.say "server capabilities: #{@client.last_response.data.code.data}"
+    else
+      raise 'unable to log into server'
+    end
   end
 end
 
-desc 'Logs into the server with telnet/OpenSSL'
-command :login do |c|
-  c.action do |global_options,options,args|
-    puts "login command ran"
-  end
-end
+# desc 'Logs into the server with telnet/OpenSSL'
+# command :login do |c|
+#   c.action do |global_options,options,args|
+#     if @client.login
+#       system "openssl s_client -crlf -connect #{global_options[:s]}:993"
+#       #    input: "A login #{global_options[:u]} #{global_options[:p]}", pty: true
+#     else
+#       raise 'unable to log into server'
+#     end
+#   end
+# end
 
 desc 'Prints folder names and statistics'
 command :folders do |c|
@@ -92,16 +106,20 @@ pre do |global,command,options,args|
   @client = Imapcli::Client.new(global[:s], global[:u], global[:p])
   @prompt.say "server: #{global[:s]}"
   @prompt.say "user: #{global[:u]}"
-  # raise 'invalid server name' unless @client.server_valid?
+  raise 'invalid server name' unless @client.server_valid?
   raise 'invalid user name' unless @client.user_valid?
+  raise 'unable to connect to server' unless @client.connection
 
   true
 end
 
 post do |global,command,options,args|
-  # Post logic here
-  # Use skips_post before a command to skip this
-  # block on that command only
+  if global[:v]
+    @prompt.say '--verbose switch on, listing server responses'
+    @client.responses.each do |response|
+      @prompt.say response
+    end
+  end
 end
 
 on_error do |exception|
