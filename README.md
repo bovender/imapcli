@@ -21,15 +21,25 @@ stats, you have to resort to communicating with the server by telnet or OpenSSL.
 `imapcli` offers a convenient way to query an IMAP server.
 
 
-Installation
-------------
+Installing and executing `imapcli`
+--------------------------------
 
-`imapcli` is a Ruby project and as such does not need to be compiled. Just clone
-this repository and run
+`imapcli` is a Ruby project and as such does not need to be compiled. You'll
+need Ruby on your system.
+
+### Run in the repository
+
+Just clone this repository and run
 
     bin/imapcli
 
-You'll need Ruby on your system.
+### Gem
+
+To follow.
+
+Run:
+
+    imapcli
 
 ### .deb installer
 
@@ -37,20 +47,18 @@ To follow.
 
 ### Docker image
 
-To follow.
+To follow. This will be an option if you don't have Ruby installed.
 
 
-Usage
------
+Commands
+--------
 
-    bin/imapcli <command> [-s SERVER] [-u USER] [-p PASSWORD|-P]
+For basic usage instructions and possible options, run `imapcli` and examine
+the output.
 
 ### Commands
 
-`<command>` may be one of the following:
-
-*   `help`
-*   `info`
+*   `info`: Prints configuration information about the server.
 
 ### Command-line options
 
@@ -101,6 +109,7 @@ following:
 
 ### IMAP via Telnet or OpenSSL
 
+
 State of the project
 --------------------
 
@@ -108,6 +117,10 @@ Please consider this an alpha version. It does what I needed it for most (collec
 information about the folder sizes), but that's pretty much it. I'll be happy
 to take **pull request**. Please issue those against the **develop** branch as
 I like to follow *[a successful Git branching model](http://nvie.com/git-model)*.
+
+### Versioning
+
+This project is [semantically versioned](https://semver.org).
 
 ### To do
 

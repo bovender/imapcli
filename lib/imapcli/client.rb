@@ -1,6 +1,7 @@
 module Imapcli
   class Client
     require 'net/imap'
+    require 'filesize'
 
     attr_accessor :server, :user, :pass
     attr_reader :responses
@@ -62,6 +63,20 @@ module Imapcli
     def separator
       @separator ||= begin
         @connection.list('', '')[0].delim
+      end
+    end
+
+    def supports_quota
+      capabilities.include? 'QUOTA'
+    end
+
+    def quota
+      if supports_quota
+        @quota ||= begin
+          info = @connection.getquotaroot('INBOX')[1]
+          percent = info.quota.to_i > 0 ? info.usage.to_i.fdiv(info.quota.to_i) * 100 : nil
+          [ info.usage, info.quota, percent ]
+        end
       end
     end
 

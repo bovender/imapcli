@@ -62,6 +62,11 @@ command :info do |c|
     if @client.login
       @prompt.say "capabilities: #{@client.capabilities.join(' ')}"
       @prompt.say "hierarchy separator: #{@client.separator}"
+      if @client.supports_quota
+        usage = Filesize.from(@client.quota[0] + ' kB').pretty
+        available = Filesize.from(@client.quota[1] + ' kB').pretty
+        @prompt.say "quota: #{usage} used, #{available} available (#{@client.quota[2].round(1)}%)"
+      end
     else
       raise 'unable to log into server'
     end
