@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+require 'gli'
+begin # XXX: Remove this begin/rescue before distributing your app
+require 'imapcli'
+rescue LoadError
+  STDERR.puts "In development, you need to use `bundle exec bin/imapcli` to run your app"
+  STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
+  STDERR.puts "Feel free to remove this message from bin/imapcli now"
+  exit 64
+end
+require 'dotenv'
+require 'tty-prompt'
+
+Dotenv.load
+
+include GLI::App
+
+program_desc 'Command-line interface for IMAP servers'
+
+version Imapcli::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+sort_help :manually
+wrap_help_text :tty_only
+
+desc 'Domain name (FQDN) of the IMAP server'
+default_value ENV['IMAP_SERVER']
+arg_name 'imap.example.com'
+flag [:s,:server]
+
+desc 'Log-in name (username/email)'
+default_value ENV['IMAP_USER']
+arg_name 'user'
+flag [:u,:user]
+
+desc 'Log-in password'
+default_value ENV['IMAP_PASS']
+arg_name 'password'
+flag [:p,:password]
+
+desc 'Prompt for password'
+switch [:P, :prompt], negatable: false
+
+desc 'Verbose output (e.g., response values from Ruby''s Net::IMAP)'
+switch [:v,:verbose], negatable: false
+
+desc 'Tests if the server is available and log-in succeeds with the credentials'
+command :check do |c|
+  c.action do |global_options,options,args|
+  end
+end
+
+desc 'Prints information about the server'
+command :info do |c|
+  c.action do |global_options,options,args|
+    puts "info command ran"
+  end
+end
+
+desc 'Logs into the server with telnet/OpenSSL'
+command :login do |c|
+  c.action do |global_options,options,args|
+    puts "login command ran"
+  end
+end
+
+desc 'Prints folder names and statistics'
+command :folders do |c|
+  c.action do |global_options,options,args|
+    puts "folders command ran"
+  end
+end
+
+pre do |global,command,options,args|
+  @prompt = TTY::Prompt.new
+
+  if global[:s].nil? || global[:s].empty?
+    raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
+  end
+  if global[:s].nil? || global[:s].empty?
+    raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
+  end
+  if global[:P] && global[:p]
+    puts 'warning: -p option is set in the IMAP_PASS environment variable' if ENV['IMAP_PASS']
+    raise '-p and -P options do not agree'
+  end
+  if global[:P]
+    global[:p] = @prompt.mask 'Enter password:'
+  end
+
+  @client = Imapcli::Client.new(global[:s], global[:u], global[:p])
+  @prompt.say "server: #{global[:s]}"
+  @prompt.say "user: #{global[:u]}"
+  # raise 'invalid server name' unless @client.server_valid?
+  raise 'invalid user name' unless @client.user_valid?
+
+  true
+end
+
+post do |global,command,options,args|
+  # Post logic here
+  # Use skips_post before a command to skip this
+  # block on that command only
+end
+
+on_error do |exception|
+  # Error logic here
+  # return false to skip default error handling
+  true
+end
+
+exit run(ARGV)
