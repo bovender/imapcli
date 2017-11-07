@@ -60,7 +60,8 @@ desc 'Prints information about the server'
 command :info do |c|
   c.action do |global_options,options,args|
     if @client.login
-      @prompt.say "server capabilities: #{@client.last_response.data.code.data}"
+      @prompt.say "capabilities: #{@client.capabilities.join(' ')}"
+      @prompt.say "hierarchy separator: #{@client.separator}"
     else
       raise 'unable to log into server'
     end

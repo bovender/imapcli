@@ -53,6 +53,18 @@ module Imapcli
       end
     end
 
+    def capabilities
+      @capabilities ||= begin
+        @connection.capability
+      end
+    end
+
+    def separator
+      @separator ||= begin
+        @connection.list('', '')[0].delim
+      end
+    end
+
     def folders
       @folders ||= @server.list('', '*')
     end
