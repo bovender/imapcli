@@ -60,7 +60,8 @@ desc 'Prints information about the server'
 command :info do |c|
   c.action do |global_options,options,args|
     if @client.login
-      @prompt.say "capabilities: #{@client.capabilities.join(' ')}"
+      @prompt.say "greeting: #{@client.greeting}"
+      @prompt.say "capability: #{@client.capability.join(' ')}"
       @prompt.say "hierarchy separator: #{@client.separator}"
       if @client.supports_quota
         usage = Filesize.from(@client.quota[0] + ' kB').pretty
@@ -85,10 +86,39 @@ end
 #   end
 # end
 
-desc 'Prints folder names and statistics'
-command :folders do |c|
+def traverse_mailbox_tree(mailbox, depth = 0)
+  if mailbox.has_children?
+    indent = ('  ' * depth) || ''
+    mailbox.children.each do |child|
+      @prompt.say indent + '- ' + child.name
+      traverse_mailbox_tree child, depth + 1
+    end
+  end
+end
+
+desc 'Lists mailboxes (folders)'
+command :list do |c|
   c.action do |global_options,options,args|
-    puts "folders command ran"
+    if @client.login
+      @prompt.say "mailboxes (folders) tree:"
+      traverse_mailbox_tree @client.mailbox_tree
+    end
+  end
+end
+
+desc 'Examines mailboxes'
+arg_name :mailbox, optional: false, multiple: true
+command :examine do |c|
+  c.action do |global_options,options,args|
+    if @client.login
+      @prompt.say "Examine:\n" + 'Total'.rjust(6) + ' '  + 'Unseen'.rjust(6) + ' Name'
+      args.each do |mailbox|
+        data = @client.examine(mailbox)
+        size = @client.get_size(mailbox)
+        @prompt.say "#{'%6d' % data[:total]} #{'%6d' % data[:unseen]} #{mailbox} #{size}"
+      end
+      @prompt.say
+    end
   end
 end
 
@@ -120,8 +150,9 @@ pre do |global,command,options,args|
 end
 
 post do |global,command,options,args|
+  @client.logout if @client
   if global[:v]
-    @prompt.say '--verbose switch on, listing server responses'
+    @prompt.say "\n>>> --verbose switch on, listing server responses <<<"
     @client.responses.each do |response|
       @prompt.say response
     end
@@ -129,6 +160,7 @@ post do |global,command,options,args|
 end
 
 on_error do |exception|
+  @client.logout if @client
   # Error logic here
   # return false to skip default error handling
   true

@@ -21,6 +21,17 @@ RSpec.describe Imapcli::Client do
       client.user = 'bovender@example.com'
       expect(client.user_valid?).to eq true
     end
+    it 'uses port 993 by default' do
+      expect(client.port).to eq 993
+    end
+    it 'extracts a port from the server info' do
+      client.server = 'imap.example.com:143'
+      expect(client.port).to eq 143
+    end
+    it 'extracts a server from the server string when a port is appended' do
+      client.server = 'imap.example.com:143'
+      expect(client.server).to eq 'imap.example.com'
+    end
   end
 
   context 'with valid credentials for an actual server' do
