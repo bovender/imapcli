@@ -56,9 +56,11 @@ Commands
 For basic usage instructions and possible options, run `imapcli` and examine
 the output.
 
+
 ### Commands
 
 *   `info`: Prints configuration information about the server.
+
 
 ### Command-line options
 
@@ -71,6 +73,7 @@ the output.
 *   `-p PASSWORD`: Set the password. May be omitted if the `-P` option is used
     or if the information is given in the `IMAP_PASS` environment variable (see below).
 *   `-P`: Prompt for the password.
+
 
 ### Using environment variables for the server and authentication details
 
@@ -93,7 +96,14 @@ Alternative resources
 While researching command-line tools for IMAP servers, I came across the
 following:
 
+
 ### IMAP folder size script
+
+*   <https://code.iamcal.com/pl/imap_folders>
+
+    Ad-hoc perl script that computes the sizes of each mailbox. `imapcli` was
+    inspired by this!
+
 
 ### IMAP synchronization and backup tools
 
@@ -133,4 +143,4 @@ License
 
 &copy; 2017 Daniel Kraus (bovender)
 
-MIT License.
+Apache license.

@@ -5,6 +5,7 @@ gemspec
 gem 'dotenv'
 gem 'gli'
 gem 'tty-prompt'
+gem 'descriptive_statistics'
 gem 'filesize'
 
 group :test do

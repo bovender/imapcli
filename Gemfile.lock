@@ -8,6 +8,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     coderay (1.1.2)
+    descriptive_statistics (2.5.1)
     diff-lcs (1.3)
     dotenv (2.2.1)
     equatable (0.5.0)
@@ -86,6 +87,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  descriptive_statistics
   dotenv
   filesize
   gli

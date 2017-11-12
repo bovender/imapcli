@@ -10,6 +10,7 @@ rescue LoadError
 end
 require 'dotenv'
 require 'tty-prompt'
+require 'pp'
 
 Dotenv.load
 
@@ -114,8 +115,8 @@ command :examine do |c|
       @prompt.say "Examine:\n" + 'Total'.rjust(6) + ' '  + 'Unseen'.rjust(6) + ' Name'
       args.each do |mailbox|
         data = @client.examine(mailbox)
-        size = @client.get_size(mailbox)
-        @prompt.say "#{'%6d' % data[:total]} #{'%6d' % data[:unseen]} #{mailbox} #{size}"
+        pp data
+        # @prompt.say "#{'%6d' % data[:total]} #{'%6d' % data[:unseen]} #{mailbox} #{size}"
       end
       @prompt.say
     end
