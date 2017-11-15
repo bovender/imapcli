@@ -36,7 +36,7 @@ arg_name 'user'
 flag [:u,:user]
 
 desc 'Log-in password'
-default_value ENV['IMAP_PASS']
+# default_value ENV['IMAP_PASS']
 arg_name 'password'
 flag [:p,:password]
 
@@ -101,6 +101,7 @@ desc 'Lists mailboxes (folders)'
 command :list do |c|
   c.action do |global_options,options,args|
     if @client.login
+      @client.collect_stats
       @prompt.say "mailboxes (folders) tree:"
       traverse_mailbox_tree @client.mailbox_tree
     end
@@ -112,11 +113,14 @@ arg_name :mailbox, optional: false, multiple: true
 command :examine do |c|
   c.action do |global_options,options,args|
     if @client.login
-      @prompt.say "Examine:\n" + 'Total'.rjust(6) + ' '  + 'Unseen'.rjust(6) + ' Name'
-      args.each do |mailbox|
-        data = @client.examine(mailbox)
-        pp data
-        # @prompt.say "#{'%6d' % data[:total]} #{'%6d' % data[:unseen]} #{mailbox} #{size}"
+      args.each do |mailbox_name|
+        mailbox = @client.find_mailbox(mailbox_name)
+        if mailbox
+          mailbox.collect_stats(@client)
+          @formatter.mailbox_stats(mailbox)
+        else
+          raise 'mailbox not found'
+        end
       end
       @prompt.say
     end
@@ -124,6 +128,7 @@ command :examine do |c|
 end
 
 pre do |global,command,options,args|
+  @formatter = Imapcli::Formatter.new
   @prompt = TTY::Prompt.new
 
   if global[:s].nil? || global[:s].empty?
@@ -133,12 +138,12 @@ pre do |global,command,options,args|
     raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
   end
   if global[:P] && global[:p]
-    puts 'warning: -p option is set in the IMAP_PASS environment variable' if ENV['IMAP_PASS']
     raise '-p and -P options do not agree'
   end
   if global[:P]
     global[:p] = @prompt.mask 'Enter password:'
   end
+  global[:p] ||= ENV['IMAP_PASS']
 
   @client = Imapcli::Client.new(global[:s], global[:u], global[:p])
   @prompt.say "server: #{global[:s]}"

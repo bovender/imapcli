@@ -1,6 +1,0 @@
-= imapcli
-
-Describe your project here
-
-:include:imapcli.rdoc
-

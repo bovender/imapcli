@@ -1,7 +1,7 @@
 module Imapcli
   # In IMAP speak, a mailbox is what one would commonly call a 'folder'
   class Mailbox
-    attr_reader :children, :imap_mailbox_list, :name
+    attr_reader :children, :imap_mailbox_list, :name, :stats
 
     def initialize(name, imap_mailbox_lists = nil)
       @name = name || ''
@@ -50,15 +50,21 @@ module Imapcli
       end
     end
 
-    # Collects statistics for this mailbox and all of its children
+    # Collects statistics for this mailbox.
     #
     # +connection+ must be a Net::IMAP object
-    def collect_stats(connection)
+    def collect_stats(client)
       if full_name # proceed only if this is a mailbox of its own
-        stats = connection.examine(full_name)
-        
+        @stats = client.examine(full_name)
       end
-      @children.values.each { |child| child.collect_stats(connection) }
+    end
+
+    # Collects statistics for this mailbox and all of its children.
+    #
+    # +connection+ must be a Net::IMAP object
+    def collect_stats_recursively(connection)
+      collect_stats(connection)
+      @children.values.each { |child| child.collect_stats_recursively(connection) }
     end
 
     protected
