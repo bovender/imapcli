@@ -11,6 +11,7 @@ end
 require 'dotenv'
 require 'tty-prompt'
 require 'tty-table'
+require 'tty-progressbar'
 # require 'pp'
 
 Dotenv.load
@@ -70,9 +71,14 @@ end
 
 desc 'Collects mailbox statistics'
 arg_name :mailbox, optional: false, multiple: true
-command :examine do |c|
+command :stats do |c|
   c.action do |global_options,options,args|
-    body = @command.stats(args)
+    progress_bar = nil
+    body = @command.stats(args) do |current, total|
+      progress_bar ||= TTY::ProgressBar.new("collecting stats... :percent (:eta remaining)",
+        total: total, clear: true)
+      progress_bar.advance
+    end
     head = [ 'Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max' ]
     table = TTY::Table.new(head, body)
     @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right) )

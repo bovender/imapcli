@@ -1,4 +1,5 @@
 module Imapcli
+  require 'pp'
   # Provides entry points for Imapcli.
   #
   # Most of the methods in this class return
@@ -42,23 +43,17 @@ module Imapcli
       end
     end
 
-    def stats(mailboxes)
+    def stats(mailbox_names)
       perform do |output|
-        mailboxes.each do |name|
-          if mailbox = @client.find_mailbox(name)
-            mailbox.collect_stats(@client)
-            output << [
-              mailbox.full_name,
-              mailbox.stats[:count],
-              format_kib(mailbox.stats[:size]),
-              format_kib(mailbox.stats[:min]),
-              format_kib(mailbox.stats[:q1]),
-              format_kib(mailbox.stats[:median]),
-              format_kib(mailbox.stats[:q3]),
-              format_kib(mailbox.stats[:max])
-            ]
-          else
-            output << [ self.class.unknown_mailbox_prefix + name ] + Array.new(7, '---')
+        mailboxes = mailbox_names.map { |name| @client.find_mailbox(name) }.compact
+        total_count = mailboxes.inject(mailboxes.length) do |sum, mailbox|
+          sum += mailbox.count_sub_mailboxes
+        end
+        current_count = 0
+        mailboxes.each do |mailbox|
+          collect_stats_recursively(output, mailbox, 3) do
+            current_count += 1
+            yield current_count, total_count if block_given?
           end
         end
       end
@@ -90,6 +85,34 @@ module Imapcli
         end
       end
       output
+    end
+
+    def collect_stats(mailbox)
+      yield if block_given?
+      if mailbox.name
+        mailbox.collect_stats(@client)
+        [
+          mailbox.full_name,
+          mailbox.stats.count,
+          format_kib(mailbox.stats.total_size),
+          format_kib(mailbox.stats.min_size),
+          format_kib(mailbox.stats.quartile_1_size),
+          format_kib(mailbox.stats.median_size),
+          format_kib(mailbox.stats.quartile_3_size),
+          format_kib(mailbox.stats.max_size)
+        ]
+      else
+        []
+      end
+    end
+
+    def collect_stats_recursively(output, mailbox, max_level = nil)
+      output << collect_stats(mailbox, &Proc.new)
+      if mailbox.has_children? && max_level && mailbox.level < max_level
+        mailbox.children.each do |child|
+          collect_stats_recursively(output, child, max_level, &Proc.new)
+        end
+      end
     end
 
     def format_kib(kib)

@@ -15,6 +15,13 @@ module Imapcli
       @children[mailbox]
     end
 
+    # Counts all sub mailboxes recursively
+    def count_sub_mailboxes
+      @children.values.inject(@children.length) do |count, child|
+        count += child.count_sub_mailboxes
+      end
+    end
+
     def full_name
       imap_mailbox_list&.name
     end
@@ -60,7 +67,7 @@ module Imapcli
     # +connection+ must be a Net::IMAP object
     def collect_stats(client)
       if full_name # proceed only if this is a mailbox of its own
-        @stats = client.examine(full_name)
+        @stats = Stats.new(client.message_sizes(full_name))
       end
     end
 
@@ -104,5 +111,6 @@ module Imapcli
         self
       end
     end
+
   end
 end
