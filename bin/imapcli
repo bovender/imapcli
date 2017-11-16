@@ -10,7 +10,8 @@ rescue LoadError
 end
 require 'dotenv'
 require 'tty-prompt'
-require 'pp'
+require 'tty-table'
+# require 'pp'
 
 Dotenv.load
 
@@ -49,86 +50,39 @@ switch [:v,:verbose], negatable: false
 desc 'Tests if the server is available and log-in succeeds with the credentials'
 command :check do |c|
   c.action do |global_options,options,args|
-    if @client.login
-      @prompt.say 'login successful'
-    else
-      @prompt.say 'login failed'
-    end
+    @command.check ? @prompt.ok('login successful') : @prompt.error('login failed')
   end
 end
 
 desc 'Prints information about the server'
 command :info do |c|
   c.action do |global_options,options,args|
-    if @client.login
-      @prompt.say "greeting: #{@client.greeting}"
-      @prompt.say "capability: #{@client.capability.join(' ')}"
-      @prompt.say "hierarchy separator: #{@client.separator}"
-      if @client.supports_quota
-        usage = Filesize.from(@client.quota[0] + ' kB').pretty
-        available = Filesize.from(@client.quota[1] + ' kB').pretty
-        @prompt.say "quota: #{usage} used, #{available} available (#{@client.quota[2].round(1)}%)"
-      end
-    else
-      raise 'unable to log into server'
-    end
-  end
-end
-
-# desc 'Logs into the server with telnet/OpenSSL'
-# command :login do |c|
-#   c.action do |global_options,options,args|
-#     if @client.login
-#       system "openssl s_client -crlf -connect #{global_options[:s]}:993"
-#       #    input: "A login #{global_options[:u]} #{global_options[:p]}", pty: true
-#     else
-#       raise 'unable to log into server'
-#     end
-#   end
-# end
-
-def traverse_mailbox_tree(mailbox, depth = 0)
-  if mailbox.has_children?
-    indent = ('  ' * depth) || ''
-    mailbox.children.each do |child|
-      @prompt.say indent + '- ' + child.name
-      traverse_mailbox_tree child, depth + 1
-    end
+    @command.info.each { |line| @prompt.say line }
   end
 end
 
 desc 'Lists mailboxes (folders)'
 command :list do |c|
   c.action do |global_options,options,args|
-    if @client.login
-      @client.collect_stats
-      @prompt.say "mailboxes (folders) tree:"
-      traverse_mailbox_tree @client.mailbox_tree
-    end
+    @command.list.each { |line| @prompt.say line }
   end
 end
 
-desc 'Examines mailboxes'
+desc 'Collects mailbox statistics'
 arg_name :mailbox, optional: false, multiple: true
 command :examine do |c|
   c.action do |global_options,options,args|
-    if @client.login
-      args.each do |mailbox_name|
-        mailbox = @client.find_mailbox(mailbox_name)
-        if mailbox
-          mailbox.collect_stats(@client)
-          @formatter.mailbox_stats(mailbox)
-        else
-          raise 'mailbox not found'
-        end
-      end
-      @prompt.say
+    body = @command.stats(args)
+    head = [ 'Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max' ]
+    table = TTY::Table.new(head, body)
+    @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right) )
+    if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
+      @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
     end
   end
 end
 
 pre do |global,command,options,args|
-  @formatter = Imapcli::Formatter.new
   @prompt = TTY::Prompt.new
 
   if global[:s].nil? || global[:s].empty?
@@ -145,12 +99,14 @@ pre do |global,command,options,args|
   end
   global[:p] ||= ENV['IMAP_PASS']
 
-  @client = Imapcli::Client.new(global[:s], global[:u], global[:p])
+  client = Imapcli::Client.new(global[:s], global[:u], global[:p])
   @prompt.say "server: #{global[:s]}"
   @prompt.say "user: #{global[:u]}"
-  raise 'invalid server name' unless @client.server_valid?
-  raise 'invalid user name' unless @client.user_valid?
-  raise 'unable to connect to server' unless @client.connection
+  raise 'invalid server name' unless client.server_valid?
+  raise 'invalid user name' unless client.user_valid?
+  @prompt.warn 'warning: no password was provided (missing -p/-P option)' unless global[:p]
+  raise 'unable to connect to server' unless client.connection
+  @command = Imapcli::Command.new(client)
 
   true
 end

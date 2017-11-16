@@ -29,11 +29,12 @@ Motivation
 ----------
 
 When my university mail account had almost reached the quota, I needed to find
-out what the largest mail folders were (in terms of megabytes, not message count).
-To my surprise, there was no easy way to accomplish this; or at least I did not
-find one by searching the web. A couple of specialized IMAP-related tools exist
-(see below), but when it comes to querying an IMAP server for configuration and
-stats, you have to resort to communicating with the server by telnet or OpenSSL.
+out what the largest mail folders were (in terms of megabytes, not message
+count). To my surprise, there was no easy way to accomplish this; or at least I
+did not find one by searching the web. A couple of specialized IMAP-related
+tools exist (see [below](#alternative-resources)), but when it comes to querying
+an IMAP server for configuration and stats, you have to resort to communicating
+with the server by telnet or OpenSSL.
 
 `imapcli` offers a convenient way to query an IMAP server.
 
@@ -153,6 +154,12 @@ information will be used. `.env` is git-ignored, so your credentials won't end u
 in the repository, but of course anyone on your system who has access to this file
 will be able to read the clear-text credentials.
 
+**Also, be aware that a clear-text password that is stored in an environment
+variable can be easily accessed by any other code running under your account.**
+
+For best security, *never* store your clear-text password anywhere. Use the `-P`
+(prompt) global option to have `imapcli` prompt you for the password.
+
 
 Alternative resources
 ---------------------
@@ -206,8 +213,10 @@ This project is [semantically versioned](https://semver.org).
 Credits
 -------
 
-This tool is build around the awesome [GLI](https://github.com/davetron5000/gli) gem.
-See the `Gemfile` for other work that this tool depends on.
+This tool is build around the awesome [GLI](https://github.com/davetron5000/gli)
+gem by [David Copeland](https://github.com/davetron5000) and makes extensive use
+of [Piotr Murach's](https://github.com/piotrmurach) excellent `TTY` tools. See
+the `Gemfile` for other work that this tool depends on.
 
 
 License

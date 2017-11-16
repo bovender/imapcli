@@ -1,14 +1,14 @@
 module Imapcli
   # In IMAP speak, a mailbox is what one would commonly call a 'folder'
   class Mailbox
-    attr_reader :children, :imap_mailbox_list, :name, :stats
+    attr_reader :level, :children, :imap_mailbox_list, :name, :stats
 
-    def initialize(name, imap_mailbox_lists = nil)
-      @name = name || ''
+    # Creates a new root Mailbox object and optionally adds sub mailboxes from
+    # an array of Net::IMAP::MailboxList items.
+    def initialize(mailbox_list_items = nil)
+      @level = 0
       @children = {}
-      if imap_mailbox_lists
-        imap_mailbox_lists.sort_by { |m| m.name.downcase }.each { |i| add_mailbox i }
-      end
+      add_mailbox_list(mailbox_list_items) if mailbox_list_items
     end
 
     def [](mailbox)
@@ -27,10 +27,15 @@ module Imapcli
       @children.values
     end
 
+    # Add a list of mailboxes as returned by Net::IMAP#list.
+    def add_mailbox_list(array_of_mailbox_list_items)
+      array_of_mailbox_list_items.sort_by { |m| m.name.downcase }.each { |i| add_mailbox i }
+    end
+
     # Adds a sub mailbox designated by the +name+ of a Net::IMAP::MailboxList.
-    def add_mailbox(imap_mailbox_list)
+    def add_mailbox(imap_mailbox_list, options = {})
       return unless imap_mailbox_list&.name&.length > 0
-      recursive_add(imap_mailbox_list, imap_mailbox_list.name)
+      recursive_add(0, imap_mailbox_list, imap_mailbox_list.name, options)
     end
 
     # Attempts to locate and retrieve a sub mailbox.
@@ -69,17 +74,31 @@ module Imapcli
 
     protected
 
-    def recursive_add(imap_mailbox_list, relative_name = nil)
-      delimiter = imap_mailbox_list.delim
+    def level=(level)
+      @level = level
+    end
+
+    def name=(name)
+      @name = name
+    end
+
+    def recursive_add(level, imap_mailbox_list, relative_name = nil, options = {})
+      delimiter = options[:delimiter] || imap_mailbox_list.delim
       if relative_name
         sub_mailbox_name, subs_subs = relative_name.split(delimiter, 2)
-        if @children[sub_mailbox_name]
-          sub_mailbox = @children[sub_mailbox_name]
+        if options[:case_insensitive] || (level == 0 && relative_name.upcase == 'INBOX')
+          key = sub_mailbox_name.upcase
         else
-          sub_mailbox = Mailbox.new(sub_mailbox_name)
-          @children[sub_mailbox_name] = sub_mailbox
+          key = sub_mailbox_name
         end
-        sub_mailbox.recursive_add(imap_mailbox_list, subs_subs)
+        # Create a new mailbox if there does not exist one by the name
+        unless sub_mailbox = @children[key]
+          sub_mailbox = Mailbox.new
+          sub_mailbox.level = level
+          sub_mailbox.name = sub_mailbox_name
+          @children[key] = sub_mailbox
+        end
+        sub_mailbox.recursive_add(level + 1, imap_mailbox_list, subs_subs, options)
       else # no more sub mailboxes: we've reached the last of the children
         @imap_mailbox_list = imap_mailbox_list
         self
