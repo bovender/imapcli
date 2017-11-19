@@ -15,10 +15,27 @@ module Imapcli
       @children[mailbox]
     end
 
-    # Counts all sub mailboxes recursively
+    # Determines if this mailbox represents a dedicated IMAP mailbox with an
+    # associated Net::IMAP::MailboxList structure.
+    def is_imap_mailbox?
+      not imap_mailbox_list.nil?
+    end
+
+    # Counts all sub mailboxes recursively.
+    #
+    # The result does not include the current mailbox.
     def count_sub_mailboxes
       @children.values.inject(@children.length) do |count, child|
         count += child.count_sub_mailboxes
+      end
+    end
+
+    # Determines the maximum level in the mailbox tree
+    def get_max_level
+      if has_children?
+        @children.values.map { |child| child.get_max_level }.max
+      else
+        level
       end
     end
 
@@ -62,21 +79,30 @@ module Imapcli
       end
     end
 
-    # Collects statistics for this mailbox.
+    # Collects statistics for this mailbox and the subordinate mailboxes up to
+    # a given level.
     #
-    # +connection+ must be a Net::IMAP object
-    def collect_stats(client)
+    # If a block is given, it is called with the Imapcli::Stats object for this
+    # mailbox.
+    def collect_stats(client, max_level = nil)
       if full_name # proceed only if this is a mailbox of its own
         @stats = Stats.new(client.message_sizes(full_name))
       end
+      yield @stats if block_given?
+      if max_level && level < max_level
+        @children.values.each { |child| child.collect_stats(client, max_level) }
+      end
     end
 
-    # Collects statistics for this mailbox and all of its children.
+    # Converts the mailbox tree to a flat list.
     #
-    # +connection+ must be a Net::IMAP object
-    def collect_stats_recursively(connection)
-      collect_stats(connection)
-      @children.values.each { |child| child.collect_stats_recursively(connection) }
+    # Mailbox objects that do not represent IMAP mailboxes (such as the root
+    # mailbox) are not included.
+    def to_list
+      list = @children.values.inject([self]) do |ary, child|
+        ary + child.to_list
+      end
+      list.select { |e| e.is_imap_mailbox? }.sort_by { |e| e.full_name }
     end
 
     protected

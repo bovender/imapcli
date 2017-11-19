@@ -18,4 +18,33 @@ RSpec.describe Imapcli::Mailbox do
     mailbox.add_mailbox(imap_mailbox_list)
     expect(mailbox.find_sub_mailbox(name, '/').imap_mailbox_list).to eq imap_mailbox_list
   end
+  it 'determines the maximum level in the subtree' do
+    mailbox = Imapcli::Mailbox.new([
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Foo'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Foo/Sub'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Bar'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Bar/Sub/Subsub'),
+    ])
+    expect(mailbox.get_max_level).to eq 3
+  end
+  it 'converts a tree to a list' do
+    mailbox = Imapcli::Mailbox.new([
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Foo'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Foo/Sub'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Bar'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Bar/Sub'),
+      Net::IMAP::MailboxList.new(nil, '/', 'Inbox/Bar/Sub/Subsub'),
+    ])
+    list = mailbox.to_list
+    list_names = list.map { |m| m.full_name }
+    expect(list_names).to eq [
+      'Inbox',
+      'Inbox/Bar',
+      'Inbox/Bar/Sub',
+      'Inbox/Bar/Sub/Subsub',
+      'Inbox/Foo',
+      'Inbox/Foo/Sub',
+    ]
+  end
 end
