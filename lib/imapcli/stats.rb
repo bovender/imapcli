@@ -4,7 +4,7 @@ module Imapcli
   # +message_sizes+ is an array of message sizes in bytes.
   class Stats
 
-    def initialize(message_sizes)
+    def initialize(message_sizes = [])
       @message_sizes = message_sizes
     end
 

@@ -35,27 +35,39 @@ module Imapcli
       end
     end
 
+    # Lists all mailboxes
     def list
       perform do |output|
-        @client.collect_stats
-        output << "mailboxes (folders) tree:"
         output += traverse_mailbox_tree @client.mailbox_tree, 0
       end
     end
 
+    # Collects statistics about mailboxes.
+    #
+    # If a block is given, it is called with the current mailbox count and the
+    # total mailbox count so that current progress can be computed.
     def stats(mailbox_names)
       perform do |output|
-        mailboxes = mailbox_names.map { |name| @client.find_mailbox(name) }.compact
-        total_count = mailboxes.inject(mailboxes.length) do |sum, mailbox|
-          sum += mailbox.count_sub_mailboxes
-        end
+        # Map the command line arguments to Imapcli::Mailbox objects
+        mailboxes = Imapcli::Mailbox.consolidate(
+          mailbox_names.map { |name| @client.find_mailbox(name) }.compact
+        )
+        total_count = mailboxes.inject(0) { |sum, mailbox| sum += mailbox.count }
         current_count = 0
+        total_stats = Stats.new
         mailboxes.each do |mailbox|
-          collect_stats_recursively(output, mailbox, 3) do
+          mailbox.collect_stats(@client) do |stats|
+            total_stats.add(stats)
             current_count += 1
             yield current_count, total_count if block_given?
           end
         end
+        list = mailboxes.inject([]) { |l, m| l + m.to_list }.uniq
+        list.each do |mailbox|
+          output << stats_to_table(mailbox.full_name, mailbox.stats)
+        end
+        output << Array.new(8, '======')
+        output << stats_to_table('Total', total_stats)
       end
     end
 
@@ -87,32 +99,17 @@ module Imapcli
       output
     end
 
-    def collect_stats(mailbox)
-      yield if block_given?
-      if mailbox.name
-        mailbox.collect_stats(@client)
-        [
-          mailbox.full_name,
-          mailbox.stats.count,
-          format_kib(mailbox.stats.total_size),
-          format_kib(mailbox.stats.min_size),
-          format_kib(mailbox.stats.quartile_1_size),
-          format_kib(mailbox.stats.median_size),
-          format_kib(mailbox.stats.quartile_3_size),
-          format_kib(mailbox.stats.max_size)
-        ]
-      else
-        []
-      end
-    end
-
-    def collect_stats_recursively(output, mailbox, max_level = nil)
-      output << collect_stats(mailbox, &Proc.new)
-      if mailbox.has_children? && max_level && mailbox.level < max_level
-        mailbox.children.each do |child|
-          collect_stats_recursively(output, child, max_level, &Proc.new)
-        end
-      end
+    def stats_to_table(first_cell, stats)
+      [
+        first_cell,
+        stats.count,
+        format_kib(stats.total_size),
+        format_kib(stats.min_size),
+        format_kib(stats.quartile_1_size),
+        format_kib(stats.median_size),
+        format_kib(stats.quartile_3_size),
+        format_kib(stats.max_size)
+      ]
     end
 
     def format_kib(kib)

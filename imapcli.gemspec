@@ -8,12 +8,11 @@ spec = Gem::Specification.new do |s|
   s.homepage = 'https://github.com/bovender/imapcli'
   s.platform = Gem::Platform::RUBY
   s.summary = 'A description of your project'
-  s.files = `git ls-files`.split("
-")
+  s.files = `git ls-files`.split("\n")
   s.require_paths << 'lib'
   s.has_rdoc = true
-  s.extra_rdoc_files = ['README.rdoc','imapcli.rdoc']
-  s.rdoc_options << '--title' << 'imapcli' << '--main' << 'README.rdoc' << '-ri'
+  s.extra_rdoc_files = ['README.md','imapcli.rdoc']
+  s.rdoc_options << '--title' << 'imapcli' << '--main' << 'README.md' << '-ri'
   s.bindir = 'bin'
   s.executables << 'imapcli'
   s.add_development_dependency('rake')
