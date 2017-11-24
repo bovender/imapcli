@@ -14,8 +14,8 @@ RSpec.describe Imapcli::Mailbox do
   end
   # it 'parses a mailbox list' do
   #   mailbox_list = Net::IMAP::MailboxList.new(attr: nil, delim: '/', name: 'Root/Subfolder')
-  #   mailbox_tree = Imapcli::MailboxTree.new(mailbox_list)
-  #   expect(mailbox_tree.tree.length).to eq 1
+  #   mailbox_root = Imapcli::MailboxTree.new(mailbox_list)
+  #   expect(mailbox_root.tree.length).to eq 1
   # end
   it 'returns nil if a given sub mailbox does not exist' do
     expect(mailbox.find_sub_mailbox('INBOX.does.not.exist', '.')).to eq nil

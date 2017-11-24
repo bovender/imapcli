@@ -158,7 +158,7 @@ module Imapcli
 
     # Collects stats for all mailboxes recursively.
     def collect_stats
-      mailbox_tree.collect_stats(self)
+      mailbox_root.collect_stats(self)
     end
 
     # Gets a list of Net::IMAP::MailboxList items, one for each mailbox.
@@ -171,15 +171,15 @@ module Imapcli
     # Returns a tree of +Imapcli::Mailbox+ objects.
     #
     # The value is cached.
-    def mailbox_tree
-      @mailbox_tree ||= Mailbox.new(mailboxes)
+    def mailbox_root
+      @mailbox_root ||= Mailbox.new(mailboxes)
     end
 
-    # Attempts to locate a given +mailbox+ in the +mailbox_tree+.
+    # Attempts to locate a given +mailbox+ in the +mailbox_root+.
     #
     # Returns nil if the mailbox is not found.
     def find_mailbox(mailbox)
-      mailbox_tree.find_sub_mailbox(mailbox, separator)
+      mailbox_root.find_sub_mailbox(mailbox, separator)
     end
 
     private

@@ -23,6 +23,10 @@ module Imapcli
       not imap_mailbox_list.nil?
     end
 
+    def is_root?
+      name.respond_to?(:empty?) ? !!name.empty? : !name
+    end
+
     # Counts all sub mailboxes recursively.
     #
     # The result includes the current mailbox.

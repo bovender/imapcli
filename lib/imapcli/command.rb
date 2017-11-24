@@ -5,7 +5,7 @@ module Imapcli
   # Most of the methods in this class return
   class Command
     def initialize(client)
-      raise 'Imapcli::Client is required' unless client
+      raise ArgumentError, 'Imapcli::Client is required' unless client && client.is_a?(Imapcli::Client)
       @client = client
     end
 
@@ -17,9 +17,6 @@ module Imapcli
     end
 
     # Collects basic information about the server.
-    #
-    # The block is called repeatedly with informative messages.
-    # If login is not successful, an error will be raised.
     def info
       perform do |output|
         output << "greeting: #{@client.greeting}"
@@ -38,7 +35,7 @@ module Imapcli
     # Lists all mailboxes
     def list
       perform do |output|
-        output += traverse_mailbox_tree @client.mailbox_tree, 0
+        traverse_mailbox_tree(output, @client.mailbox_root, 0)
       end
     end
 
@@ -46,23 +43,21 @@ module Imapcli
     #
     # If a block is given, it is called with the current mailbox count and the
     # total mailbox count so that current progress can be computed.
-    def stats(mailbox_names)
+    def stats(mailbox_names, options = {})
       perform do |output|
         # Map the command line arguments to Imapcli::Mailbox objects
-        mailboxes = Imapcli::Mailbox.consolidate(
-          mailbox_names.map { |name| @client.find_mailbox(name) }.compact
-        )
-        total_count = mailboxes.inject(0) { |sum, mailbox| sum += mailbox.count }
-        current_count = 0
+        mailboxes = find_mailboxes(mailbox_names)
+        current_count, total_count = 0, mailboxes.inject(0) { |sum, mailbox| sum += mailbox.count }
         total_stats = Stats.new
         mailboxes.each do |mailbox|
-          mailbox.collect_stats(@client) do |stats|
+          max_level = determine_max_level(mailbox, options)
+          mailbox.collect_stats(@client, max_level) do |stats|
             total_stats.add(stats)
             current_count += 1
             yield current_count, total_count if block_given?
           end
         end
-        list = mailboxes.inject([]) { |l, m| l + m.to_list }.uniq
+        list = mailbox_trees_to_sorted_list(mailboxes, options)
         list.each do |mailbox|
           output << stats_to_table(mailbox.full_name, mailbox.stats)
         end
@@ -87,16 +82,14 @@ module Imapcli
       output
     end
 
-    def traverse_mailbox_tree(mailbox, depth = 0)
-      output = []
+    def traverse_mailbox_tree(output, mailbox, depth = 0)
       if mailbox.has_children?
         indent = ('  ' * depth) || ''
         mailbox.children.each do |child|
           output << indent + '- ' + child.name
-          output += traverse_mailbox_tree child, depth + 1
+          output << traverse_mailbox_tree(output, child, depth + 1)
         end
       end
-      output
     end
 
     def stats_to_table(first_cell, stats)
@@ -114,6 +107,55 @@ module Imapcli
 
     def format_kib(kib)
       kib.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse + ' kiB'.freeze
+    end
+
+    # Finds and returns mailboxes based on mailbox names.
+    def find_mailboxes(names)
+      if names && names.length > 1
+        Imapcli::Mailbox.consolidate(
+          names.map { |name| @client.find_mailbox(name) }.compact
+        )
+      else
+        [@client.mailbox_root]
+      end
+    end
+
+    # Determines the maximum level for mailbox statistics.
+    #
+    # If the mailbox is the root mailbox, the entire mailbox tree is traversed
+    # by default, unless a :depth option limits the maximum depth.
+    #
+    # If the mailbox is not the root mailbox, by default no recursion will be
+    # performed, unless a :depth option requests a particular depth.
+    def determine_max_level(mailbox, options = {})
+      if mailbox.is_root?
+        options[:depth]
+      else
+        depth = options[:depth] || 0
+        mailbox.level + depth
+      end
+    end
+
+    def mailbox_trees_to_sorted_list(mailboxes, options = {})
+      list = mailboxes.inject([]) { |l, m| l + m.to_list }.uniq
+      case options[:sort]
+      when :count
+        list.sort_by { |mailbox| mailbox.stats.count }
+      when :total_size
+        list.sort_by { |mailbox| mailbox.stats.total_size }
+      when :median_size
+        list.sort_by { |mailbox| mailbox.stats.median_size }
+      when :min_size
+        list.sort_by { |mailbox| mailbox.stats.min_size }
+      when :q1
+        list.sort_by { |mailbox| mailbox.stats.q1 }
+      when :q3
+        list.sort_by { |mailbox| mailbox.stats.q3 }
+      when :max_size
+        list.sort_by { |mailbox| mailbox.stats.max_size }
+      else
+        list
+      end
     end
 
   end
