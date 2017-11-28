@@ -30,6 +30,10 @@ RSpec.describe Imapcli::Stats do
     expect(stats.quartile_3_size).to eq 9 # response is rounded
   end
 
+  it 'adds nothing if other stats are nil' do
+    expect { stats.add nil }.to_not raise_error
+  end
+
   context 'adding other stats' do
     before :each do
       stats.add other_stats

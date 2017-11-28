@@ -10,6 +10,7 @@ module Imapcli
 
     # Adds other statistics.
     def add(other_stats)
+      return unless other_stats
       @message_sizes += other_stats.message_sizes
       invalidate
     end

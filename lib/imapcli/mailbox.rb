@@ -120,11 +120,15 @@ module Imapcli
     #
     # Mailbox objects that do not represent IMAP mailboxes (such as the root
     # mailbox) are not included.
-    def to_list
-      list = @children.values.inject([self]) do |ary, child|
-        ary + child.to_list
+    def to_list(max_level = nil)
+      me = is_imap_mailbox? ? [self] : []
+      if max_level.nil? || level < max_level
+        @children.values.inject(me) do |ary, child|
+          ary + child.to_list(max_level)
+        end.sort_by { |e| e.full_name }
+      else
+        me
       end
-      list.select { |e| e.is_imap_mailbox? }.sort_by { |e| e.full_name }
     end
 
     # Consolidates a list of mailboxes: If a mailbox is a sub-mailbox of another

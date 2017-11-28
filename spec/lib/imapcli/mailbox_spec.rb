@@ -45,6 +45,15 @@ RSpec.describe Imapcli::Mailbox do
       'Inbox/Foo/Sub',
     ]
   end
+  it 'converts a tree to a list up to a certain level' do
+    list = mailbox.to_list(1)
+    list_names = list.map { |m| m.full_name }
+    expect(list_names).to eq [
+      'Inbox',
+      'Inbox/Bar',
+      'Inbox/Foo'
+    ]
+  end
 
   context 'identification and consolidation' do
     let(:parent) { mailbox.find_sub_mailbox('Inbox', '/') }

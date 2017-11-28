@@ -12,6 +12,8 @@ require 'dotenv'
 require 'tty-prompt'
 require 'tty-table'
 require 'tty-progressbar'
+require 'csv'
+# require 'pry'
 # require 'pp'
 
 Dotenv.load
@@ -72,21 +74,64 @@ end
 desc 'Collects mailbox statistics'
 arg_name :mailbox, optional: false, multiple: true
 command :stats do |c|
+  c.switch [:r, :recurse], desc: 'Recurse into sub mailboxes', negatable: false
+  c.switch [:R, :no_recurse], desc: 'Do not recurse into sub mailboxes', negatable: false
+  c.flag [:o, :order], desc: 'Order', arg_name: 'property',
+    must_match: %w(count total_size min_size q1 median_size q3 max_size)
+  c.switch [:O, :reverse], desc: 'Reverse sort order (largest first)', negatable: false
+  c.switch [:csv], desc: 'Output comma-separated values (CSV)'
+
   c.action do |global_options,options,args|
-    progress_bar = nil
-    body = @command.stats(args) do |current, total|
-      progress_bar ||= TTY::ProgressBar.new("collecting stats... :percent (:eta remaining)",
-        total: total, clear: true)
-      progress_bar.advance
+    command_options = {}
+    raise 'incompatible options -r/--recurse and -R/--no_recurse' if options[:r] && options[:R]
+    if options[:r]
+      if args.empty?
+        @prompt.warn 'warning: superfluous -r/--recurse option; will recurse from root by default'
+      else
+        command_options[:depth] = -1
+      end
+    elsif options[:R]
+      if args.empty?
+        command_options[:depth] = 0
+      else
+        @prompt.warn 'warning: superfluous -R/--no_recurse option; will not recurse from non-root mailbox by default'
+      end
     end
+
+    progress_bar = nil
+    body = @command.stats(args, command_options) do |n|
+      if progress_bar
+        progress_bar.advance
+      else
+        progress_bar = TTY::ProgressBar.new(
+          "collecting stats... :percent (:eta remaining)",
+          total: n, clear: true)
+      end
+    end
+
     head = [ 'Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max' ]
-    table = TTY::Table.new(head, body)
-    @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right) )
-    if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
-      @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
+    if options[:csv]
+      @prompt.warn 'notice: messages sizes in CSV output are in kiB (1024 bytes)'
+      @prompt.say head.to_csv
+      body[0..-2].each { |row| @prompt.say row.to_csv } # skip grand total
+    else
+      nice_body = body.map do |row|
+        row[0..1] + row[2..-1].map { |cell| format_kib(cell) }
+      end
+      table = TTY::Table.new(head, nice_body)
+      @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right) )
+      if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
+        @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
+      end
     end
   end
 end
+
+
+def format_kib(kib)
+  kib.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse + ' kiB'.freeze
+end
+
 
 pre do |global,command,options,args|
   @prompt = TTY::Prompt.new
