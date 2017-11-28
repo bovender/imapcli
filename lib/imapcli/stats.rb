@@ -51,7 +51,7 @@ module Imapcli
 
     # Converts a number of bytes to kiB.
     def convert_bytes(bytes)
-      bytes.fdiv(1024).round
+      bytes.fdiv(1024).round if bytes
     end
 
     def invalidate

@@ -113,7 +113,8 @@ command :stats do |c|
     if options[:csv]
       @prompt.warn 'notice: messages sizes in CSV output are in kiB (1024 bytes)'
       @prompt.say head.to_csv
-      body[0..-2].each { |row| @prompt.say row.to_csv } # skip grand total
+      last_mailbox_line = body.length == 1 ? -1 : -2 # skip grand total if present
+      body[0..last_mailbox_line].each { |row| @prompt.say row.to_csv }
     else
       nice_body = body.map do |row|
         row[0..1] + row[2..-1].map { |cell| format_kib(cell) }
@@ -129,7 +130,11 @@ end
 
 
 def format_kib(kib)
-  kib.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse + ' kiB'.freeze
+  if kib
+    kib.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse + ' kiB'.freeze
+  else
+    'NA'
+  end
 end
 
 

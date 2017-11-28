@@ -153,7 +153,11 @@ module Imapcli
       # total = connection.responses['EXISTS'][0]
       # unseen = query_server { connection.search('UNSEEN') }.length
       messages = messages(mailbox)
-      query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
+      if messages.length > 0
+        query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
+      else
+        []
+      end
     end
 
     # Collects stats for all mailboxes recursively.

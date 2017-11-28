@@ -69,7 +69,8 @@ module Imapcli
           output << stats_to_table(mailbox.full_name, mailbox.stats)
         end
         # output << Array.new(8, '======')
-        output << stats_to_table('Total', total_stats)
+        output << stats_to_table('Total', total_stats) if list.length > 1
+        output
       end
     end
 
