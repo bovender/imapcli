@@ -11,6 +11,9 @@ end
 require 'dotenv'
 require 'tty-prompt'
 require 'tty-table'
+require 'tty-progressbar'
+require 'csv'
+# require 'pry'
 # require 'pp'
 
 Dotenv.load
@@ -70,30 +73,60 @@ end
 
 desc 'Collects mailbox statistics'
 arg_name :mailbox, optional: false, multiple: true
-command :examine do |c|
+command :stats do |c|
+  c.switch [:r, :recurse], desc: 'Recurse into sub mailboxes', negatable: false
+  c.switch [:R, :no_recurse], desc: 'Do not recurse into sub mailboxes', negatable: false
+  c.flag [:o, :sort], desc: 'Order', arg_name: 'property'
+  c.switch [:O, :reverse], desc: 'Reverse sort order (largest first)', negatable: false
+  c.switch [:csv], desc: 'Output comma-separated values (CSV)'
+
   c.action do |global_options,options,args|
-    body = @command.stats(args)
-    head = [ 'Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max' ]
-    table = TTY::Table.new(head, body)
-    @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right) )
-    if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
-      @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
+    raise unless @validator.stats_options_valid?(options, args)
+
+    progress_bar = nil
+    body = @command.stats(args, @validator.options) do |n|
+      if progress_bar
+        progress_bar.advance
+      else
+        @prompt.say "info: collecting stats for #{n} folders" if n > 1
+        progress_bar = TTY::ProgressBar.new(
+          "collecting stats... :current/:total (:percent, :eta remaining)",
+          total: n, clear: true)
+      end
     end
+
+    head = [ 'Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max' ]
+    if options[:csv]
+      @prompt.warn 'notice: messages sizes in CSV output are in kiB (1024 bytes)'
+      @prompt.say head.to_csv
+      last_mailbox_line = body.length == 1 ? -1 : -2 # skip grand total if present
+      body[0..last_mailbox_line].each { |row| @prompt.say row.to_csv }
+    else
+      nice_body = body.map do |row|
+        row[0..1] + row[2..-1].map { |cell| format_kib(cell) }
+      end
+      table = TTY::Table.new(head, nice_body)
+      @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right) )
+      if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
+        @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
+      end
+    end
+  end
+end
+
+def format_kib(kib)
+  if kib
+    kib.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse + ' kiB'.freeze
+  else
+    'NA'
   end
 end
 
 pre do |global,command,options,args|
   @prompt = TTY::Prompt.new
+  @validator = Imapcli::OptionValidator.new()
+  raise unless @validator.global_options_valid?(global)
 
-  if global[:s].nil? || global[:s].empty?
-    raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
-  end
-  if global[:s].nil? || global[:s].empty?
-    raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
-  end
-  if global[:P] && global[:p]
-    raise '-p and -P options do not agree'
-  end
   if global[:P]
     global[:p] = @prompt.mask 'Enter password:'
   end
@@ -123,9 +156,16 @@ end
 
 on_error do |exception|
   @client.logout if @client
-  # Error logic here
-  # return false to skip default error handling
-  true
+  if @validator && @validator.errors.any?
+    @validator.errors.each { |error| @prompt.error error }
+  else
+    @prompt&.error "error: #{exception}"
+  end
+  @prompt.nil? # if we do not have a prompt yet, let GLI handle the exception
+end
+
+def print_warnings
+  @validator.warnings.each { |warning| @prompt.warn warning }
 end
 
 exit run(ARGV)

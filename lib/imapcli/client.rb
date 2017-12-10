@@ -145,7 +145,7 @@ module Imapcli
     # * :median: Median of message sizes.
     # * :q3: Third quartile of messages sizes.
     # * :max: Size of largest message.
-    def examine(mailbox)
+    def message_sizes(mailbox)
       # Could use the EXAMINE command to get the number of messages in a mailbox,
       # but we need to retrieve an array of message indexes anyway (to compute
       # the total mailbox size), so we can save one roundtrip to the server.
@@ -153,22 +153,16 @@ module Imapcli
       # total = connection.responses['EXISTS'][0]
       # unseen = query_server { connection.search('UNSEEN') }.length
       messages = messages(mailbox)
-      count = messages.length
-      sizes = query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] }.sort }
-      {
-        count: count,
-        size: convert_bytes(sizes.sum),
-        min: convert_bytes(sizes.first),
-        q1: convert_bytes(sizes.percentile(25)),
-        median: convert_bytes(sizes.median),
-        q3: convert_bytes(sizes.percentile(75)),
-        max: convert_bytes(sizes.last)
-      }
+      if messages.length > 0
+        query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
+      else
+        []
+      end
     end
 
     # Collects stats for all mailboxes recursively.
     def collect_stats
-      mailbox_tree.collect_stats(self)
+      mailbox_root.collect_stats(self)
     end
 
     # Gets a list of Net::IMAP::MailboxList items, one for each mailbox.
@@ -181,15 +175,15 @@ module Imapcli
     # Returns a tree of +Imapcli::Mailbox+ objects.
     #
     # The value is cached.
-    def mailbox_tree
-      @mailbox_tree ||= Mailbox.new(mailboxes)
+    def mailbox_root
+      @mailbox_root ||= Mailbox.new(mailboxes)
     end
 
-    # Attempts to locate a given +mailbox+ in the +mailbox_tree+.
+    # Attempts to locate a given +mailbox+ in the +mailbox_root+.
     #
     # Returns nil if the mailbox is not found.
     def find_mailbox(mailbox)
-      mailbox_tree.find_sub_mailbox(mailbox, separator)
+      mailbox_root.find_sub_mailbox(mailbox, separator)
     end
 
     private
@@ -215,11 +209,6 @@ module Imapcli
       result = yield
       @log << connection.responses
       result
-    end
-
-    # Converts a number of bytes to kiB.
-    def convert_bytes(bytes)
-      bytes.fdiv(1024).round
     end
 
   end # class Client

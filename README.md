@@ -8,7 +8,7 @@ imapcli
 
 `imapcli` is a command-line tool that offers a convenient way to query an IMAP
 server for configuration details and e-mail statistics. It can be used to gather
-IMAP folder sizes.
+IMAP mailbox sizes.
 
 
 Table of contents
@@ -18,7 +18,7 @@ Table of contents
 *   [Warning](#warning)
 *   [Installing and executing `imapcli`](#installing-and-executing-imapcli)
 *   [Terminology](#terminology)
-*   [Commands](#commands)
+*   [Usage](#usage)
 *   [Alternative resources](#alternative-resources)
 *   [State of the project](#state-of-the-project)
 *   [Credits](#credits)
@@ -42,9 +42,10 @@ with the server by telnet or OpenSSL.
 Warning
 -------
 
-Some servers are configured to detect malicious login attempts by the frequency
-of connections from a given source. **It may happen that you get locked out of
-a server if you use `imapcli` to issue too many queries in too short a time!**
+Some servers are configured to detect potentially malicious login attempts by
+the frequency of repeat connections from a given source. **It may happen that
+you get locked out of a server if you use `imapcli` to issue too many queries in
+too short a time!**
 
 If you happen to be the server administrator yourself, have
 [fail2ban](https://www.fail2ban.org) running, and find your IP being denied
@@ -53,10 +54,10 @@ this:
 
     sudo fail2ban-client set dovecot unbanip <your-ip>
 
-If your IMAP server is not [Dovecot](https://www.dovecot.org), you need to change
-this command and provide the appropriate 'jail' name.
+If your IMAP server is not [Dovecot](https://www.dovecot.org), you need to adjust
+this command to provide the appropriate 'jail' name.
 
-To prevent `fail2ban` from blocking your IP, you may want to add a network and
+To prevent `fail2ban` from blocking your IP, you may want to add your network and
 submask to `jail.local`:
 
     # /etc/fail2ban/jail.local
@@ -67,52 +68,67 @@ Do not forget to reload the `jail2ban` configuration afterwards:
 
     sudo service fail2ban reload
 
+Of course this only works if your IP addresses do not change too much.
+
 (On Ubuntu Linux, the [indicator-ip](https://github.com/bovender/indicator-ip)
 applet may be useful to know your remote IP. Disclaimer: I am the author of this
 tool.)
 
+
 Installing and executing `imapcli`
 --------------------------------
 
-`imapcli` is a Ruby project and as such does not need to be compiled. You'll
-need Ruby on your system.
+`imapcli` is a Ruby project and as such does not need to be compiled. To run it
+on your machine, you can either pull the repository, install a Gem, or use a
+Docker image.
+
+Detailed usage instructions follow [below](#usage).
+
+I don't currently provide a .deb package because Debian packaging done right
+is kind of complicated.
 
 
 ### Run in the repository
 
-Just clone this repository and run
+Requirements: git, a recent Ruby, and [bundler](http://bundler.io).
 
-    bin/imapcli
+Install:
+
+    git clone https://github.com/bovender/imapcli
+
+Run:
+
+    cd imapcli
+    bundle exec bin/imapcli
 
 
-### Gem
+### Install the gem
 
-To follow.
+Requirements: a recent Ruby and RubyGems.
+
+Install:
+
+    gem install imapcli
 
 Run:
 
     imapcli
 
 
-### .deb installer
-
-To follow.
-
-
 ### Docker image
 
-To follow. This will be an option if you don't have Ruby installed.
+To follow.
 
 
 Terminology
 -----------
 
 `imapcli` attempts to use the typical IMAP terminology. I guess most people
-have their mails organized in *folders*; in IMAP speak, a folder is a *maibox*.
+have their mails organized in **folders**; in IMAP speak, a folder is a **maibox**.
 
 
-Commands
---------
+Usage
+-----
 
 For basic usage instructions and possible options, run `imapcli` and examine
 the output. Please note that `imapcli` distinguishes between global and
@@ -120,45 +136,144 @@ command-specific options. Global options *precede* and command-specific options
 *follow* a `command`, see the output of `imapcli` (without command or options)
 for more information.
 
-
-### Commands
-
-*   `info`: Prints configuration information about the server.
-*   `examine`: Examines a mailbox (i.e., folder) and returns statistics about it.
+Note: The following examples use the command `imapcli`. Depending on how you
+[installed](#installing-and-executing-imapcli) `imapcli`, you may need to use a
+different command.
 
 
-### Command-line options
+### Setting your server and account information
 
-*   `-s SERVER`: Set the server domain name (e.g., `imap.example.com`). May be
-    omitted if the information is given in the `IMAP_SERVER` environment variable
-    (see below).
-*   `-u USER`: Set the login (user) name (e.g., `john@example.com`). May be
-    omitted if the information is given in the `IMAP_USER` environment variable
-    (see below).
-*   `-p PASSWORD`: Set the password. May be omitted if the `-P` option is used
-    or if the information is given in the `IMAP_PASS` environment variable (see below).
-*   `-P`: Prompt for the password.
+Server and account information are given as *global options*:
 
+    imapcli -s example.com -u username -p password
 
-### Using environment variables for the server and authentication details
+Of course it is **not recommended** to type a password on the command line. If
+you *must* give the password on the command line, and have the Bash shell,
+precede the line with a space to prevent it from being saved in the shell history.
 
-You can set the following environment variables to avoid having to type the
-server information over and over again:
+To have `imapcli` prompt you for a password, use the `-P` option:
+
+    imapcli -s example.com -u username -P
+
+If you have one just IMAP server that you want to query, consider setting
+environment variables:
 
     IMAP_SERVER="imap.example.com"
     IMAP_USER="your_imap_login"
-    IMAP_PASS="your_imap_password"
+    IMAP_PASS="your_imap_password" # OPTIONAL, NOT RECOMMENDED, VERY INSECURE!
 
-If you put this in a file `.env` in the root directory of the repository, this
-information will be used. `.env` is git-ignored, so your credentials won't end up
-in the repository, but of course anyone on your system who has access to this file
-will be able to read the clear-text credentials.
+These variables can also be set in a `.env` file that resides in the root
+directory of the repository. Never add this `.env` file to the repository!
 
-**Also, be aware that a clear-text password that is stored in an environment
-variable can be easily accessed by any other code running under your account.**
 
-For best security, *never* store your clear-text password anywhere. Use the `-P`
-(prompt) global option to have `imapcli` prompt you for the password.
+### Obtain general information about the IMAP server
+
+    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P info
+    Enter password: ••••••••
+    server: yourserver.example.com
+    user: myusername
+    greeting: Dovecot ready.
+    capability: IMAP4REV1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE SORT SORT=DISPLAY THREAD=REFERENCES THREAD=REFS THREAD=ORDEREDSUBJECT MULTIAPPEND URL-PARTIAL CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS LIST-EXTENDED I18NLEVEL=1 CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN CONTEXT=SEARCH LIST-STATUS BINARY MOVE SPECIAL-USE
+    hierarchy separator: /
+    quota: IMAP QUOTA extension not supported by this server
+
+
+### List all mailboxes (folders) without size information
+
+    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P list
+    Enter password: ••••••••
+    server: yourserver.example.com
+    user: myusername
+    - Work
+      - Boss
+      - Project
+    - Family
+    - Sports
+    ...
+
+
+### Obtain size information about mailboxes
+
+To obtain mailbox sizes, the server has to be queried for the message sizes for
+each mailbox of interest. Depending on the number of mailboxes and the number
+of messages in them, this may take a little while.
+
+`imapcli` prints the following statistics about the message sizes in a mailbox:
+
+*   `Count`: Number of individual messages
+*   `Total size`: Total size of all messages in the mailbox (in kiB)
+*   `Min`: Size of the smallest message in the mailbox (in kiB)
+*   `Q1`: First quartile of message sizes in the mailbox (in kiB)
+*   `Median`: Median of all message sizes in the mailbox (in kiB)
+*   `Q3`: First quartile of message sizes in the mailbox (in kiB)
+*   `Max`: Size of the largest message in the mailbox (in kiB)
+
+
+#### All mailboxes
+
+To obtain stats for all mailboxes, use the `stats` command without the optional
+mailbox argument:
+
+    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P stats
+    Enter password: ••••••••
+    server: yourserver.example.com
+    user: myusername
+    info: collecting stats for 109 folders
+    ┌────────────────────────────────┬─────┬─────────────┬──────┬───────┬─────────┬──────────┬──────────┐
+    │Mailbox                         │Count│   Total size│   Min│     Q1│   Median│        Q3│       Max│
+    ├────────────────────────────────┼─────┼─────────────┼──────┼───────┼─────────┼──────────┼──────────┤
+    ...
+    │Total                           │13168│2,498,517 kiB│ 0 kiB│  4 kiB│    7 kiB│    25 kiB│33,681 kiB│
+    └────────────────────────────────┴─────┴─────────────┴──────┴───────┴─────────┴──────────┴──────────┘
+
+#### Specific mailboxes without child mailboxes
+
+    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P stats Archive Com
+    Enter password: ••••••••
+    server: yourserver.example.com
+    user: myusername
+    ┌───────┬─────┬──────────┬─────┬─────┬──────┬──────┬───────┐
+    │Mailbox│Count│Total size│  Min│   Q1│Median│    Q3│    Max│
+    ├───────┼─────┼──────────┼─────┼─────┼──────┼──────┼───────┤
+    │Archive│    0│     0 kiB│   NA│   NA│    NA│    NA│     NA│
+    │Com    │   60│ 3,276 kiB│2 kiB│5 kiB│13 kiB│65 kiB│478 kiB│
+    │Total  │   60│ 3,276 kiB│2 kiB│5 kiB│13 kiB│65 kiB│478 kiB│
+    └───────┴─────┴──────────┴─────┴─────┴──────┴──────┴───────┘
+
+#### Specific mailboxes and child mailboxes
+
+Use the `-r`/`--recurse` flag:
+
+    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P stats -r Archive Com
+    Enter password: ••••••••
+    server: yourserver.example.com
+    user: myusername
+    info: collecting stats for 58 folders
+    ┌──────────────────────────┬─────┬──────────┬──────┬───────┬───────┬───────┬─────────┐
+    │Mailbox                   │Count│Total size│   Min│     Q1│ Median│     Q3│      Max│
+    ├──────────────────────────┼─────┼──────────┼──────┼───────┼───────┼───────┼─────────┤
+    ...
+
+#### Sorting the output
+
+By default, mailboxes are sorted alphabetically. To sort by a specific statistic,
+use an `-o`/`--sort` option:
+
+*   `-o count`
+*   `-o total_size`
+*   `-o min_size`
+*   `-o q1`
+*   `-o median_size`
+*   `-o q3`
+*   `-o max_size`
+
+Example:
+
+    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P stats -r -o max_size Archive
+
+#### Obtaining comma-separated values (CSV)
+
+Use the `--csv` flag.
 
 
 Alternative resources
@@ -194,10 +309,11 @@ following:
 State of the project
 --------------------
 
-Please consider this an alpha version. It does what I needed it for most (collect
-information about the folder sizes), but that's pretty much it. I'll be happy
-to take **pull request**. Please issue those against the **develop** branch as
-I like to follow *[a successful Git branching model](http://nvie.com/git-model)*.
+While `imapcli` does what I need it to do, there are a lot of things that could
+be improved. I'll be happy to take **pull request**. Please issue those against
+the **develop** branch as I like to follow *[a successful Git branching
+model](http://nvie.com/git-model)*.
+
 
 ### Versioning
 
@@ -205,8 +321,10 @@ This project is [semantically versioned](https://semver.org).
 
 ### To do
 
+-   More human-friendly number formatting (e.g., MiB/GiB as appropriate)
+-   Output to file
+-   Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
 -   Man page
--   .deb installer
 -   More commands?
 
 
@@ -224,4 +342,14 @@ License
 
 &copy; 2017 Daniel Kraus (bovender)
 
-Apache license.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

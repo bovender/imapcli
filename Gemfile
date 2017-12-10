@@ -6,6 +6,7 @@ gem 'dotenv'
 gem 'gli'
 gem 'tty-prompt'
 gem 'tty-table'
+gem 'tty-progressbar'
 gem 'descriptive_statistics'
 gem 'filesize'
 

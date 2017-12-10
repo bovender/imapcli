@@ -34,7 +34,7 @@ RSpec.describe Imapcli::Client do
     end
   end
 
-  context 'with valid credentials for an actual server' do
+  context 'with valid credentials for an actual server', network: true do
     before :all do
       Dotenv.load
     end
@@ -55,12 +55,12 @@ RSpec.describe Imapcli::Client do
     end
   end
 
-  context 'with invalid credentials for an actual server' do
+  context 'with invalid credentials for an actual server', network: true do
     before :all do
       Dotenv.load
     end
 
-    let(:client) { Imapcli::Client.new(ENV['IMAP_SERVER'], ENV['IMAP_USER'], ENV['IMAP_PASS'] + 'invalid') }
+    let(:client) { Imapcli::Client.new(ENV['IMAP_SERVER'], ENV['IMAP_USER'], "#{ENV['IMAP_PASS']}invalid") }
 
     it 'cannot log in to the server' do
       expect(client.login).to eq false
