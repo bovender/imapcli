@@ -76,35 +76,21 @@ arg_name :mailbox, optional: false, multiple: true
 command :stats do |c|
   c.switch [:r, :recurse], desc: 'Recurse into sub mailboxes', negatable: false
   c.switch [:R, :no_recurse], desc: 'Do not recurse into sub mailboxes', negatable: false
-  c.flag [:o, :order], desc: 'Order', arg_name: 'property',
-    must_match: %w(count total_size min_size q1 median_size q3 max_size)
+  c.flag [:o, :sort], desc: 'Order', arg_name: 'property'
   c.switch [:O, :reverse], desc: 'Reverse sort order (largest first)', negatable: false
   c.switch [:csv], desc: 'Output comma-separated values (CSV)'
 
   c.action do |global_options,options,args|
-    command_options = {}
-    raise 'incompatible options -r/--recurse and -R/--no_recurse' if options[:r] && options[:R]
-    if options[:r]
-      if args.empty?
-        @prompt.warn 'warning: superfluous -r/--recurse option; will recurse from root by default'
-      else
-        command_options[:depth] = -1
-      end
-    elsif options[:R]
-      if args.empty?
-        command_options[:depth] = 0
-      else
-        @prompt.warn 'warning: superfluous -R/--no_recurse option; will not recurse from non-root mailbox by default'
-      end
-    end
+    raise unless @validator.stats_options_valid?(options, args)
 
     progress_bar = nil
-    body = @command.stats(args, command_options) do |n|
+    body = @command.stats(args, @validator.options) do |n|
       if progress_bar
         progress_bar.advance
       else
+        @prompt.say "info: collecting stats for #{n} folders" if n > 1
         progress_bar = TTY::ProgressBar.new(
-          "collecting stats... :percent (:eta remaining)",
+          "collecting stats... :current/:total (:percent, :eta remaining)",
           total: n, clear: true)
       end
     end
@@ -128,7 +114,6 @@ command :stats do |c|
   end
 end
 
-
 def format_kib(kib)
   if kib
     kib.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse + ' kiB'.freeze
@@ -137,19 +122,11 @@ def format_kib(kib)
   end
 end
 
-
 pre do |global,command,options,args|
   @prompt = TTY::Prompt.new
+  @validator = Imapcli::OptionValidator.new()
+  raise unless @validator.global_options_valid?(global)
 
-  if global[:s].nil? || global[:s].empty?
-    raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
-  end
-  if global[:s].nil? || global[:s].empty?
-    raise 'missing server name (use -s option or set IMAP_SERVER environment variable)'
-  end
-  if global[:P] && global[:p]
-    raise '-p and -P options do not agree'
-  end
   if global[:P]
     global[:p] = @prompt.mask 'Enter password:'
   end
@@ -179,9 +156,16 @@ end
 
 on_error do |exception|
   @client.logout if @client
-  # Error logic here
-  # return false to skip default error handling
-  true
+  if @validator && @validator.errors.any?
+    @validator.errors.each { |error| @prompt.error error }
+  else
+    @prompt&.error "error: #{exception}"
+  end
+  @prompt.nil? # if we do not have a prompt yet, let GLI handle the exception
+end
+
+def print_warnings
+  @validator.warnings.each { |warning| @prompt.warn warning }
 end
 
 exit run(ARGV)

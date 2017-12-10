@@ -53,6 +53,7 @@ module Imapcli
         list = mailboxes.inject([]) do |ary, mailbox|
           ary + mailbox.to_list(determine_max_level(mailbox, options))
         end
+        raise 'mailbox not found' unless list.count > 0
         current_count = 0
         yield list.length if block_given?
         total_stats = Stats.new
@@ -139,23 +140,25 @@ module Imapcli
     end
 
     def sorted_list(list, options = {})
-      case options[:sort]
+      sorted = case options[:sort]
       when :count
-        sorted = list.sort_by { |mailbox| mailbox.stats.count }
+        list.sort_by { |mailbox| mailbox.stats.count }
       when :total_size
-        sorted = list.sort_by { |mailbox| mailbox.stats.total_size }
+        list.sort_by { |mailbox| mailbox.stats.total_size }
       when :median_size
-        sorted = list.sort_by { |mailbox| mailbox.stats.median_size }
+        list.sort_by { |mailbox| mailbox.stats.median_size }
       when :min_size
-        sorted = list.sort_by { |mailbox| mailbox.stats.min_size }
+        list.sort_by { |mailbox| mailbox.stats.min_size }
       when :q1
-        sorted = list.sort_by { |mailbox| mailbox.stats.q1 }
+        list.sort_by { |mailbox| mailbox.stats.q1 }
       when :q3
-        sorted = list.sort_by { |mailbox| mailbox.stats.q3 }
+        list.sort_by { |mailbox| mailbox.stats.q3 }
       when :max_size
-        sorted = list.sort_by { |mailbox| mailbox.stats.max_size }
+        list.sort_by { |mailbox| mailbox.stats.max_size }
+      when nil
+        list
       else
-        sorted = list
+        raise "invalid sort option: #{options[:sort]}"
       end
       options[:sort_order] == :desc ? sorted.reverse : sorted
     end
