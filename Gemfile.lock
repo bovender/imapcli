@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    imapcli (1.0.0)
+    imapcli (1.0.1)
       descriptive_statistics (~> 2.5)
       dotenv (~> 2.2)
       filesize (~> 0.1)
