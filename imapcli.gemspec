@@ -6,8 +6,9 @@ spec = Gem::Specification.new do |s|
   s.author = 'Daniel Kraus (bovender)'
   s.email = 'bovender@bovender.de'
   s.homepage = 'https://github.com/bovender/imapcli'
+  s.license = 'Apache-2.0'
   s.platform = Gem::Platform::RUBY
-  s.summary = 'A description of your project'
+  s.summary = 'Command-line tool to query IMAP servers'
   s.files = `git ls-files`.split("\n")
   s.require_paths << 'lib'
   s.has_rdoc = true
@@ -15,7 +16,13 @@ spec = Gem::Specification.new do |s|
   s.rdoc_options << '--title' << 'imapcli' << '--main' << 'README.md' << '-ri'
   s.bindir = 'bin'
   s.executables << 'imapcli'
-  s.add_development_dependency('rake')
-  s.add_development_dependency('rdoc')
-  s.add_runtime_dependency('gli','2.17.0')
+  s.add_development_dependency('rake', '~> 12.1')
+  s.add_development_dependency('rdoc', '~> 5.1')
+  s.add_runtime_dependency('descriptive_statistics', '~> 2.5')
+  s.add_runtime_dependency('dotenv', '~> 2.2')
+  s.add_runtime_dependency('filesize', '~> 0.1')
+  s.add_runtime_dependency('gli','~> 2.17')
+  s.add_runtime_dependency('tty-progressbar', '~> 0.13')
+  s.add_runtime_dependency('tty-prompt', '~> 0.13')
+  s.add_runtime_dependency('tty-table', '~> 0.9')
 end
