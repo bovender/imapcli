@@ -1,5 +1,4 @@
 module Imapcli
-  require 'pp'
   # Provides entry points for Imapcli.
   #
   # Most of the methods in this class return

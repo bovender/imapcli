@@ -1,8 +1,14 @@
 PATH
   remote: .
   specs:
-    imapcli (0.0.1)
-      gli (= 2.17.0)
+    imapcli (1.0.0)
+      descriptive_statistics (~> 2.5)
+      dotenv (~> 2.2)
+      filesize (~> 0.1)
+      gli (~> 2.17)
+      tty-progressbar (~> 0.13)
+      tty-prompt (~> 0.13)
+      tty-table (~> 0.9)
 
 GEM
   remote: https://rubygems.org/
@@ -103,19 +109,12 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  descriptive_statistics
-  dotenv
-  filesize
-  gli
   guard-rspec
   imapcli!
   pry
-  rake
-  rdoc
+  rake (~> 12.1)
+  rdoc (~> 5.1)
   rspec
-  tty-progressbar
-  tty-prompt
-  tty-table
 
 BUNDLED WITH
    1.16.0
