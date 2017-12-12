@@ -14,8 +14,8 @@ module Imapcli
       if global_options[:s].nil? || global_options[:s].empty?
         @errors << 'missing server name (use -s option or set IMAP_SERVER environment variable)'
       end
-      if global_options[:s].nil? || global_options[:s].empty?
-        @errors << 'missing server name (use -s option or set IMAP_SERVER environment variable)'
+      if global_options[:u].nil? || global_options[:u].empty?
+        @errors << 'missing user name (use -u option or set IMAP_USER environment variable)'
       end
       if global_options[:P] && global_options[:p]
         @errors << '-p and -P options do not agree'

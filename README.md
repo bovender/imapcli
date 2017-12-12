@@ -5,6 +5,7 @@ imapcli
 =======
 
 > Command-line interface (CLI) for IMAP servers
+> (<https://github.com/bovender/imapcli>)
 
 `imapcli` is a command-line tool that offers a convenient way to query an IMAP
 server for configuration details and e-mail statistics. It can be used to gather
@@ -117,7 +118,20 @@ Run:
 
 ### Docker image
 
-To follow.
+With [Docker](https://www.docker.com), you do not have to install Ruby and the
+additional dependencies. Everything is contained in the, well, container. The
+Docker image is about 120 MB in size though (I did not manage to make it
+smaller).
+
+Run:
+
+    docker run bvndr/imapcli <arguments>
+
+Example:
+
+    docker run bvndr/imapcli -s myserver.example.com -u user -P info
+
+The Docker repository is at <https://hub.docker.com/r/bvndr/imapcli>.
 
 
 Terminology
