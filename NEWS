@@ -1,2 +1,9 @@
+# Changelog
+
+## v1.0.4
+- Update rake to address CVE-2020-8130.
+
+## Previous changes
 - Fix: Docker image.
 - Fix: Options error message.
+
