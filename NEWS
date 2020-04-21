@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.0.6
+- Fix Docker build.
+
 ## v1.0.5
 - Update bundle to address CVE-2018-1000201.
 
