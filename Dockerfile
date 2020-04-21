@@ -6,6 +6,7 @@ WORKDIR /
 RUN apk add --no-cache git build-base && \
   git clone --depth 1 https://github.com/bovender/imapcli && \
   cd imapcli && \
+  bundle update --bundler && \
   bundle && \
   apk del build-base && \
   rm -rf /var/cache/apk/*

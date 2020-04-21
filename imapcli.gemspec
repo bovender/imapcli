@@ -11,7 +11,6 @@ spec = Gem::Specification.new do |s|
   s.summary = 'Command-line tool to query IMAP servers'
   s.files = `git ls-files`.split("\n")
   s.require_paths << 'lib'
-  s.has_rdoc = true
   s.extra_rdoc_files = ['README.md','imapcli.rdoc']
   s.rdoc_options << '--title' << 'imapcli' << '--main' << 'README.md' << '-ri'
   s.bindir = 'bin'
