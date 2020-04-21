@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    imapcli (1.0.4)
+    imapcli (1.0.5)
       descriptive_statistics (~> 2.5)
       dotenv (~> 2.2)
       filesize (~> 0.1)
@@ -115,4 +115,4 @@ DEPENDENCIES
   rspec
 
 BUNDLED WITH
-   1.17.2
+   2.1.4
