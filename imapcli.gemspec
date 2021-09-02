@@ -16,7 +16,7 @@ spec = Gem::Specification.new do |s|
   s.bindir = 'bin'
   s.executables << 'imapcli'
   s.add_development_dependency('rake', '~> 12.3.3')
-  s.add_development_dependency('rdoc', '~> 5.1')
+  s.add_development_dependency('rdoc', '~> 6.3')
   s.add_runtime_dependency('descriptive_statistics', '~> 2.5')
   s.add_runtime_dependency('dotenv', '~> 2.2')
   s.add_runtime_dependency('filesize', '~> 0.1')
