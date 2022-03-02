@@ -1,8 +1,4 @@
-**Heads up! Code contributions welcome. Please issue pull requests against the
-`develop` branch.**
-
-imapcli
-=======
+# imapcli
 
 > Command-line interface (CLI) for IMAP servers
 > (<https://github.com/bovender/imapcli>)
@@ -11,23 +7,19 @@ imapcli
 server for configuration details and e-mail statistics. It can be used to gather
 IMAP mailbox sizes.
 
+## Table of contents
 
-Table of contents
------------------
+* [Motivation](#motivation)
+* [Warning](#warning)
+* [Installing and executing `imapcli`](#installing-and-executing-imapcli)
+* [Terminology](#terminology)
+* [Usage](#usage)
+* [Alternative resources](#alternative-resources)
+* [State of the project](#state-of-the-project)
+* [Credits](#credits)
+* [License](#license)
 
-*   [Motivation](#motivation)
-*   [Warning](#warning)
-*   [Installing and executing `imapcli`](#installing-and-executing-imapcli)
-*   [Terminology](#terminology)
-*   [Usage](#usage)
-*   [Alternative resources](#alternative-resources)
-*   [State of the project](#state-of-the-project)
-*   [Credits](#credits)
-*   [License](#license)
-
-
-Motivation
-----------
+## Motivation
 
 When my university mail account had almost reached the quota, I needed to find
 out what the largest mail folders were (in terms of megabytes, not message
@@ -39,9 +31,7 @@ with the server by telnet or OpenSSL.
 
 `imapcli` offers a convenient way to query an IMAP server.
 
-
-Warning
--------
+## Warning
 
 Some servers are configured to detect potentially malicious login attempts by
 the frequency of repeat connections from a given source. **It may happen that
@@ -71,13 +61,7 @@ Do not forget to reload the `jail2ban` configuration afterwards:
 
 Of course this only works if your IP addresses do not change too much.
 
-(On Ubuntu Linux, the [indicator-ip](https://github.com/bovender/indicator-ip)
-applet may be useful to know your remote IP. Disclaimer: I am the author of this
-tool.)
-
-
-Installing and executing `imapcli`
---------------------------------
+## Installing and executing `imapcli`
 
 `imapcli` is a Ruby project and as such does not need to be compiled. To run it
 on your machine, you can either pull the repository, install a Gem, or use a
@@ -86,8 +70,7 @@ Docker image.
 Detailed usage instructions follow [below](#usage).
 
 I don't currently provide a .deb package because Debian packaging done right
-is kind of complicated.
-
+is kind of complicated (for me).
 
 ### Run in the repository
 
@@ -102,7 +85,6 @@ Run:
     cd imapcli
     bundle exec bin/imapcli
 
-
 ### Install the gem
 
 Requirements: a recent Ruby and RubyGems.
@@ -114,7 +96,6 @@ Install:
 Run:
 
     imapcli
-
 
 ### Docker image
 
@@ -129,20 +110,16 @@ Run:
 
 Example:
 
-    docker run bvndr/imapcli -s myserver.example.com -u user -P info
+    docker run -it bovender/imapcli -s myserver.example.com -u user -P info
 
-The Docker repository is at <https://hub.docker.com/r/bvndr/imapcli>.
+The Docker repository is at <https://hub.docker.com/r/bovender/imapcli>.
 
-
-Terminology
------------
+## Terminology
 
 `imapcli` attempts to use the typical IMAP terminology. I guess most people
 have their mails organized in **folders**; in IMAP speak, a folder is a **maibox**.
 
-
-Usage
------
+## Usage
 
 For basic usage instructions and possible options, run `imapcli` and examine
 the output. Please note that `imapcli` distinguishes between global and
@@ -153,7 +130,6 @@ for more information.
 Note: The following examples use the command `imapcli`. Depending on how you
 [installed](#installing-and-executing-imapcli) `imapcli`, you may need to use a
 different command.
-
 
 ### Setting your server and account information
 
@@ -179,7 +155,6 @@ environment variables:
 These variables can also be set in a `.env` file that resides in the root
 directory of the repository. Never add this `.env` file to the repository!
 
-
 ### Obtain general information about the IMAP server
 
     $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P info
@@ -190,7 +165,6 @@ directory of the repository. Never add this `.env` file to the repository!
     capability: IMAP4REV1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE SORT SORT=DISPLAY THREAD=REFERENCES THREAD=REFS THREAD=ORDEREDSUBJECT MULTIAPPEND URL-PARTIAL CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS LIST-EXTENDED I18NLEVEL=1 CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN CONTEXT=SEARCH LIST-STATUS BINARY MOVE SPECIAL-USE
     hierarchy separator: /
     quota: IMAP QUOTA extension not supported by this server
-
 
 ### List all mailboxes (folders) without size information
 
@@ -205,7 +179,6 @@ directory of the repository. Never add this `.env` file to the repository!
     - Sports
     ...
 
-
 ### Obtain size information about mailboxes
 
 To obtain mailbox sizes, the server has to be queried for the message sizes for
@@ -214,14 +187,13 @@ of messages in them, this may take a little while.
 
 `imapcli` prints the following statistics about the message sizes in a mailbox:
 
-*   `Count`: Number of individual messages
-*   `Total size`: Total size of all messages in the mailbox (in kiB)
-*   `Min`: Size of the smallest message in the mailbox (in kiB)
-*   `Q1`: First quartile of message sizes in the mailbox (in kiB)
-*   `Median`: Median of all message sizes in the mailbox (in kiB)
-*   `Q3`: First quartile of message sizes in the mailbox (in kiB)
-*   `Max`: Size of the largest message in the mailbox (in kiB)
-
+* `Count`: Number of individual messages
+* `Total size`: Total size of all messages in the mailbox (in kiB)
+* `Min`: Size of the smallest message in the mailbox (in kiB)
+* `Q1`: First quartile of message sizes in the mailbox (in kiB)
+* `Median`: Median of all message sizes in the mailbox (in kiB)
+* `Q3`: First quartile of message sizes in the mailbox (in kiB)
+* `Max`: Size of the largest message in the mailbox (in kiB)
 
 #### All mailboxes
 
@@ -273,13 +245,13 @@ Use the `-r`/`--recurse` flag:
 By default, mailboxes are sorted alphabetically. To sort by a specific statistic,
 use an `-o`/`--sort` option:
 
-*   `-o count`
-*   `-o total_size`
-*   `-o min_size`
-*   `-o q1`
-*   `-o median_size`
-*   `-o q3`
-*   `-o max_size`
+* `-o count`
+* `-o total_size`
+* `-o min_size`
+* `-o q1`
+* `-o median_size`
+* `-o q3`
+* `-o max_size`
 
 Example:
 
@@ -289,72 +261,56 @@ Example:
 
 Use the `--csv` flag.
 
-
-Alternative resources
----------------------
+## Alternative resources
 
 While researching command-line tools for IMAP servers, I came across the
 following:
 
-
 ### IMAP folder size script
 
-*   <https://code.iamcal.com/pl/imap_folders>
+* <https://code.iamcal.com/pl/imap_folders>
 
-    Ad-hoc perl script that computes the sizes of each mailbox. `imapcli` was
-    inspired by this!
-
+  Ad-hoc perl script that computes the sizes of each mailbox. `imapcli` was
+  inspired by this!
 
 ### IMAP synchronization and backup tools
 
-*   <https://github.com/OfflineIMAP/imapfw>
+* <https://github.com/OfflineIMAP/imapfw>
 
-    Framework to work with mails
+  Framework to work with mails
 
-*   <https://github.com/polo2ro/imapbox>
+* <https://github.com/polo2ro/imapbox>
 
-    Pull down e-mails from an IMAP server to your local disk
+  Pull down e-mails from an IMAP server to your local disk
 
+## State of the project
 
+I have not been able to work on this project for quite some time. It still
+serves me well when I occasionally need it. Pull requests are of course welcome.
 
-### IMAP via Telnet or OpenSSL
-
-
-State of the project
---------------------
-
-While `imapcli` does what I need it to do, there are a lot of things that could
-be improved. I'll be happy to take **pull request**. Please issue those against
-the **develop** branch as I like to follow *[a successful Git branching
-model](http://nvie.com/git-model)*.
-
-
-### Versioning
+I've decided to have one `main` branch, and to get rid of the `master` and
+`
 
 This project is [semantically versioned](https://semver.org).
 
 ### To do
 
--   More human-friendly number formatting (e.g., MiB/GiB as appropriate)
--   Output to file
--   Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
--   Man page
--   More commands?
+* More human-friendly number formatting (e.g., MiB/GiB as appropriate)
+* Output to file
+* Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
+* Man page
+* More commands?
 
-
-Credits
--------
+## Credits
 
 This tool is build around the awesome [GLI](https://github.com/davetron5000/gli)
 gem by [David Copeland](https://github.com/davetron5000) and makes extensive use
 of [Piotr Murach's](https://github.com/piotrmurach) excellent `TTY` tools. See
 the `Gemfile` for other work that this tool depends on.
 
+## License
 
-License
--------
-
-&copy; 2017 Daniel Kraus (bovender)
+&copy; 2017, 2022 Daniel Kraus (bovender)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
