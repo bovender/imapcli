@@ -125,7 +125,7 @@ smaller).
 
 Run:
 
-    docker run bvndr/imapcli <arguments>
+    docker run -it bovender/imapcli <arguments>
 
 Example:
 
@@ -283,7 +283,7 @@ use an `-o`/`--sort` option:
 
 Example:
 
-    $ bundle exec bin/imapcli -s yourserver.example.com -u myusername -P stats -r -o max_size Archive
+    bundle exec -it bin/imapcli -s yourserver.example.com -u myusername -P stats -r -o max_size Archive
 
 #### Obtaining comma-separated values (CSV)
 
