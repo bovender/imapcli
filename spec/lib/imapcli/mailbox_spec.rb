@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Imapcli::Mailbox do
+
   let(:mailbox) do
     described_class.new([
                           Net::IMAP::MailboxList.new(nil, '/', 'Inbox'),
@@ -19,6 +20,7 @@ RSpec.describe Imapcli::Mailbox do
   #   mailbox_root = Imapcli::MailboxTree.new(mailbox_list)
   #   expect(mailbox_root.tree.length).to eq 1
   # end
+
   it 'returns nil if a given sub mailbox does not exist' do
     expect(mailbox.find_sub_mailbox('INBOX.does.not.exist', '.')).to be_nil
   end
@@ -77,6 +79,7 @@ RSpec.describe Imapcli::Mailbox do
     # it 'consolidates several of the same mailboxes' do
     #  expect(Imapcli::Mailbox.consolidate([parent, parent])).to eq [ parent ]
     # end
+
     it 'consolidates several of the same mailbox' do
       expect(described_class.consolidate([child, child])).to eq [child]
     end
