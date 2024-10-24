@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 
+require 'simplecov'
 require 'rspec'
 require 'pry'
+
+# Start SimpleCov
+SimpleCov.start do
+  add_filter 'spec/'
+end
 
 # Configure RSpec
 RSpec.configure do |config|
