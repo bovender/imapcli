@@ -24,6 +24,7 @@ spec = Gem::Specification.new do |s|
   s.add_dependency('dotenv', '~> 2.2')
   s.add_dependency('filesize', '~> 0.1')
   s.add_dependency('gli','~> 2.17')
+  s.add_dependency('net-imap')
   s.add_dependency('tty-progressbar', '~> 0.13')
   s.add_dependency('tty-prompt', '~> 0.13')
   s.add_dependency('tty-table', '~> 0.9')
