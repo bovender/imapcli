@@ -79,21 +79,21 @@ RSpec.describe Imapcli::Command do
       it 'for all folders' do
         output = command.stats()
         expect(output).to be_a Array
-        expect(output.length).to eq 8 # including divider and summary line
+        expect(output.length).to eq 7
         expect(output[0][0]).to eq 'Inbox'
         expect(output[0][1]).to eq 4
       end
       it 'for a given folder' do
         output = command.stats('Inbox/Foo')
         expect(output).to be_a Array
-        expect(output.length).to eq 3 # including divider and summary line
+        expect(output.length).to eq 1
         expect(output[0][0]).to eq 'Inbox/Foo'
         expect(output[0][1]).to eq 8 # depends on message_sizes stub (see above)
       end
       it 'for a given folder and subfolders' do
         output = command.stats('Inbox/Foo', depth: -1)
         expect(output).to be_a Array
-        expect(output.length).to eq 4 # including divider and summary line
+        expect(output.length).to eq 3
         expect(output[1][0]).to eq 'Inbox/Foo/Sub'
       end
       it 'sorts by number of messages' do
