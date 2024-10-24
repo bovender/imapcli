@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'imapcli'
-
 RSpec.describe Imapcli::Stats do
   let(:array) { (1..12).map { |i| i * 1024 } }
   let(:other_array) { (13..24).map { |i| i * 1024 } }

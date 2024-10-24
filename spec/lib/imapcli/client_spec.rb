@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'imapcli'
-require 'dotenv'
-
 RSpec.describe Imapcli::Client do
 
   context 'with mock credentials for a nonexistent server' do

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'imapcli'
-
 RSpec.describe Imapcli::Command do
 
   context 'without a client' do

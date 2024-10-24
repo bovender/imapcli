@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'imapcli'
-require 'net/imap'
-
 RSpec.describe Imapcli::Mailbox do
   let(:mailbox) do
     described_class.new([
