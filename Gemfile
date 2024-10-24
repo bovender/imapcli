@@ -3,7 +3,9 @@ source "https://rubygems.org"
 
 gemspec
 
-group :test do
+group :development, :test do
+  gem 'rake'
+  gem 'rdoc'
   gem 'rspec'
   gem 'pry'
   gem 'guard-rspec'
