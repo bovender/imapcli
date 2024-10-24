@@ -2,7 +2,7 @@
 
 module Imapcli
   # Wrapper for Net::IMAP
-  class Client
+  class Client # rubocop:disable Metrics/ClassLength
     require 'net/imap'
     require 'filesize'
     require 'descriptive_statistics'
@@ -18,14 +18,14 @@ module Imapcli
     ## +pass+ is the password to log into the server.
     def initialize(server_with_optional_port, user, pass)
       @port = 993 # default
-      self.server, @user, @pass = server_with_optional_port, user, pass
+      self.server = server_with_optional_port
+      @user = user
+      @pass = pass
       clear_log
     end
 
     # Attribute reader for the server domain name
-    def server
-      @server
-    end
+    attr_reader :server
 
     # Attribute writer for the server domain name; a port may be appended with
     # a colon.
@@ -46,13 +46,13 @@ module Imapcli
     # Note that a propery regex for an FQDN is hard to achieve.
     # See https://stackoverflow.com/a/106223/270712 and elsewhere.
     def server_valid?
-      @server.match? '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$'
+      @server.match? '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$' # rubocop:disable Layout/LineLength
     end
 
     # Perform *very* basic sanity check on user name
     #
     def user_valid?
-      @user&.length > 0
+      @user&.length&.> 0
     end
 
     # Returns true if both server and user name are valid.
@@ -83,17 +83,18 @@ module Imapcli
     # credentials).
     def login
       raise('no connection to a server') unless connection
+
       begin
         response_ok? connection.login(@user, @pass)
-      rescue Net::IMAP::NoResponseError => error
-        log_error error
+      rescue Net::IMAP::NoResponseError => e
+        log_error e
       end
     end
 
     # Logs out of the server.
     def logout
       # access instance variable to avoid creating a new connection
-      @connection.logout if @connection
+      @connection&.logout
     end
 
     # Returns the server's greeting (which may reveal the server software name
@@ -120,12 +121,12 @@ module Imapcli
     # If the server +supports_quota+, returns an array containing the current
     # usage (in kiB), the total quota (in kiB), and the percent usage.
     def quota
-      if supports_quota
-        @quota ||= begin
-          info = query_server { @connection.getquotaroot('INBOX')[1] }
-          percent = info.quota.to_i > 0 ? info.usage.to_i.fdiv(info.quota.to_i) * 100 : nil
-          [ info.usage, info.quota, percent ]
-        end
+      return unless supports_quota
+
+      @quota ||= begin
+        info = query_server { @connection.getquotaroot('INBOX')[1] }
+        percent = info.quota.to_i.positive? ? info.usage.to_i.fdiv(info.quota.to_i) * 100 : nil
+        [info.usage, info.quota, percent]
       end
     end
 
@@ -155,10 +156,10 @@ module Imapcli
       # total = connection.responses['EXISTS'][0]
       # unseen = query_server { connection.search('UNSEEN') }.length
       messages = messages(mailbox)
-      if messages.length > 0
-        query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
-      else
+      if messages.empty?
         []
+      else
+        query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
       end
     end
 
@@ -206,12 +207,13 @@ module Imapcli
     # error if not. The code that queries the server must be contained in the
     # +block+, and the +block+'s return value is returned by this function.
     # The +connection+'s responses are logged.
-    def query_server(&block)
+    def query_server
       raise('no connection to a server') unless connection
+
       result = yield
       @log << connection.responses
       result
     end
 
-  end # class Client
-end # module Imapcli
+  end
+end

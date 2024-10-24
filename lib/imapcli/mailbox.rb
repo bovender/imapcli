@@ -2,9 +2,9 @@
 
 module Imapcli
   # In IMAP speak, a mailbox is what one would commonly call a 'folder'
-  class Mailbox
+  class Mailbox # rubocop:disable Metrics/ClassLength
     attr_accessor :options
-    attr_reader :level, :children, :imap_mailbox_list, :name, :stats
+    attr_reader :level, :imap_mailbox_list, :name, :stats
 
     # Creates a new root Mailbox object and optionally adds sub mailboxes from
     # an array of Net::IMAP::MailboxList items.
@@ -21,11 +21,11 @@ module Imapcli
 
     # Determines if this mailbox represents a dedicated IMAP mailbox with an
     # associated Net::IMAP::MailboxList structure.
-    def is_imap_mailbox?
-      not imap_mailbox_list.nil?
+    def imap_mailbox?
+      !imap_mailbox_list.nil?
     end
 
-    def is_root?
+    def root?
       name.respond_to?(:empty?) ? !!name.empty? : !name
     end
 
@@ -34,17 +34,17 @@ module Imapcli
     # The result includes the current mailbox.
     def count(max_level = nil)
       sum = 1
-      if max_level.nil? || level < max_level
-        @children.values.inject(sum) do |count, child|
-          count + child.count(max_level)
-        end
+      return unless max_level.nil? || level < max_level
+
+      @children.values.inject(sum) do |count, child|
+        count + child.count(max_level)
       end
     end
 
     # Determines the maximum level in the mailbox tree
-    def get_max_level
-      if has_children?
-        @children.values.map { |child| child.get_max_level }.max
+    def max_level
+      if children?
+        @children.values.map(&:max_level).max
       else
         level
       end
@@ -54,8 +54,8 @@ module Imapcli
       imap_mailbox_list&.name
     end
 
-    def has_children?
-      @children.length > 0
+    def children?
+      !@children.empty?
     end
 
     def children
@@ -69,7 +69,8 @@ module Imapcli
 
     # Adds a sub mailbox designated by the +name+ of a Net::IMAP::MailboxList.
     def add_mailbox(imap_mailbox_list)
-      return unless imap_mailbox_list&.name&.length > 0
+      return unless imap_mailbox_list&.name&.length&.> 0
+
       recursive_add(0, imap_mailbox_list, imap_mailbox_list.name)
     end
 
@@ -84,13 +85,13 @@ module Imapcli
     #
     # Returns nil of none exists with the given name.
     # Name must be relative to the current mailbox.
-    def find_sub_mailbox(relative_name, delimiter)
+    def find_sub_mailbox(relative_name, delimiter) # rubocop:disable Metrics/MethodLength
       if relative_name
         sub_mailbox_name, subs_subs = relative_name.split(delimiter, 2)
         key = normalize_key(sub_mailbox_name, level)
-        if sub_mailbox = @children[key]
+        if (sub_mailbox = @children[key])
           sub_mailbox.find_sub_mailbox(subs_subs, delimiter)
-        else
+        else # rubocop:disable Style/EmptyElse
           nil # no matching sub mailbox found, stop searching the tree
         end
       else
@@ -105,16 +106,15 @@ module Imapcli
     #
     # If a block is given, it is called with the Imapcli::Stats object for this
     # mailbox.
-    def collect_stats(client, max_level = nil)
+    def collect_stats(client, max_level = nil, &block)
       return if @stats
-      if full_name # proceed only if this is a mailbox of its own
-        @stats = Stats.new(client.message_sizes(full_name))
-      end
+
+      @stats = Stats.new(client.message_sizes(full_name)) if full_name # proceed only if this is a mailbox of its own
       yield @stats if block_given?
-      if max_level.nil? || level < max_level
-        @children.values.each do |child|
-          child.collect_stats(client, max_level) { |child_stats| yield child_stats}
-        end
+      return unless max_level.nil? || level < max_level
+
+      @children.each_value do |child|
+        child.collect_stats(client, max_level, &block)
       end
     end
 
@@ -123,11 +123,11 @@ module Imapcli
     # Mailbox objects that do not represent IMAP mailboxes (such as the root
     # mailbox) are not included.
     def to_list(max_level = nil)
-      me = is_imap_mailbox? ? [self] : []
+      me = imap_mailbox? ? [self] : []
       if max_level.nil? || level < max_level
         @children.values.inject(me) do |ary, child|
           ary + child.to_list(max_level)
-        end.sort_by { |e| e.full_name }
+        end.sort_by(&:full_name)
       else
         me
       end
@@ -145,21 +145,15 @@ module Imapcli
 
     protected
 
-    def level=(level)
-      @level = level
-    end
+    attr_writer :level, :name
 
-    def name=(name)
-      @name = name
-    end
-
-    def recursive_add(level, imap_mailbox_list, relative_name = nil)
+    def recursive_add(level, imap_mailbox_list, relative_name = nil) # rubocop:disable Metrics/MethodLength
       delimiter = options[:delimiter] || imap_mailbox_list.delim
       if relative_name
         sub_mailbox_name, subs_subs = relative_name.split(delimiter, 2)
         key = normalize_key(sub_mailbox_name, level)
         # Create a new mailbox if there does not exist one by the name
-        unless sub_mailbox = @children[key]
+        unless (sub_mailbox = @children[key])
           sub_mailbox = Mailbox.new
           sub_mailbox.level = level
           sub_mailbox.name = sub_mailbox_name
@@ -174,7 +168,7 @@ module Imapcli
 
     # Normalizes a mailbox name for use as the key in the children hash.
     def normalize_key(key, level)
-      if options[:case_insensitive] || (level == 0 && key.upcase == 'INBOX')
+      if options[:case_insensitive] || (level.zero? && key.upcase == 'INBOX')
         key.upcase
       else
         key

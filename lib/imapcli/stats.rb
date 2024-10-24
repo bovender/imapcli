@@ -13,6 +13,7 @@ module Imapcli
     # Adds other statistics.
     def add(other_stats)
       return unless other_stats
+
       @message_sizes += other_stats.message_sizes
       invalidate
     end
@@ -26,23 +27,23 @@ module Imapcli
     end
 
     def min_size
-      @min ||= convert_bytes(@message_sizes.min)
+      @min_size ||= convert_bytes(@message_sizes.min)
     end
 
     def quartile_1_size
-      @q1 ||= convert_bytes(@message_sizes.percentile(25))
+      @quartile_1_size ||= convert_bytes(@message_sizes.percentile(25))
     end
 
     def median_size
-      @median ||= convert_bytes(@message_sizes.median)
+      @median_size ||= convert_bytes(@message_sizes.median)
     end
 
     def quartile_3_size
-      @q3 ||= convert_bytes(@message_sizes.percentile(75))
+      @quartile_3_size ||= convert_bytes(@message_sizes.percentile(75))
     end
 
     def max_size
-      @max ||= convert_bytes(@message_sizes.max)
+      @max_size ||= convert_bytes(@message_sizes.max)
     end
 
     protected
@@ -53,7 +54,7 @@ module Imapcli
 
     # Converts a number of bytes to kiB.
     def convert_bytes(bytes)
-      bytes.fdiv(1024).round if bytes
+      bytes&.fdiv(1024)&.round
     end
 
     def invalidate

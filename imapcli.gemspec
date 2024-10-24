@@ -2,7 +2,7 @@
 
 require_relative 'lib/imapcli/version'
 
-spec = Gem::Specification.new do |s|
+Gem::Specification.new do |s|
   s.name = 'imapcli'
   s.version = Imapcli::VERSION
   s.platform = Gem::Platform::RUBY
@@ -14,7 +14,7 @@ spec = Gem::Specification.new do |s|
 
   s.files = `git ls-files`.split("\n")
 
-  s.extra_rdoc_files = ['README.md','imapcli.rdoc']
+  s.extra_rdoc_files = ['README.md', 'imapcli.rdoc']
   s.rdoc_options << '--title' << 'imapcli' << '--main' << 'README.md' << '-ri'
 
   s.bindir = 'exe'
@@ -24,7 +24,7 @@ spec = Gem::Specification.new do |s|
   s.add_dependency('descriptive_statistics', '~> 2.5')
   s.add_dependency('dotenv', '~> 2.2')
   s.add_dependency('filesize', '~> 0.1')
-  s.add_dependency('gli','~> 2.17')
+  s.add_dependency('gli', '~> 2.17')
   s.add_dependency('net-imap')
   s.add_dependency('tty-progressbar', '~> 0.13')
   s.add_dependency('tty-prompt', '~> 0.13')

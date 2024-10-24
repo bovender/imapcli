@@ -6,15 +6,11 @@ require 'rubygems/package_task'
 require 'rdoc/task'
 # require 'cucumber'
 # require 'cucumber/rake/task'
+
 Rake::RDocTask.new do |rd|
-  rd.main = "README.md"
-  rd.rdoc_files.include("README.md","lib/**/*.rb","bin/**/*")
+  rd.main = 'README.md'
+  rd.rdoc_files.include('README.md', 'lib/**/*.rb', 'bin/**/*')
   rd.title = 'imapcli'
-end
-
-spec = eval(File.read('imapcli.gemspec'))
-
-Gem::PackageTask.new(spec) do |pkg|
 end
 
 # CUKE_RESULTS = 'results.html'

@@ -33,7 +33,7 @@ RSpec.describe Imapcli::Mailbox do
     expect(mailbox.count).to eq 7 # includes virtual root mailbox
   end
   it 'determines the maximum level in the subtree' do
-    expect(mailbox.get_max_level).to eq 3
+    expect(mailbox.max_level).to eq 3
   end
   it 'converts a tree to a list' do
     list = mailbox.to_list
