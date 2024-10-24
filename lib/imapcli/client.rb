@@ -3,10 +3,6 @@
 module Imapcli
   # Wrapper for Net::IMAP
   class Client # rubocop:disable Metrics/ClassLength
-    require 'net/imap'
-    require 'filesize'
-    require 'descriptive_statistics'
-
     attr_accessor :port, :user, :pass
     attr_reader :responses
 

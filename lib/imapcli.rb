@@ -2,10 +2,13 @@
 
 # require ruby dependencies
 require 'csv'
+require 'net/imap'
 # require 'pp'
 
 # require external dependencies
 # require 'pry'
+require 'descriptive_statistics'
+require 'filesize'
 require 'gli'
 require 'dotenv'
 require 'tty-prompt'
