@@ -20,6 +20,7 @@ spec = Gem::Specification.new do |s|
   s.bindir = 'exe'
   s.executables = ['imapcli']
 
+  s.add_dependency('csv')
   s.add_dependency('descriptive_statistics', '~> 2.5')
   s.add_dependency('dotenv', '~> 2.2')
   s.add_dependency('filesize', '~> 0.1')
