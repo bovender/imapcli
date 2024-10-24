@@ -17,8 +17,8 @@ spec = Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md','imapcli.rdoc']
   s.rdoc_options << '--title' << 'imapcli' << '--main' << 'README.md' << '-ri'
 
-  s.bindir = 'bin'
-  s.executables << 'imapcli'
+  s.bindir = 'exe'
+  s.executables = ['imapcli']
 
   s.add_development_dependency('rake', '~> 12.3.3')
   s.add_development_dependency('rdoc', '~> 6.3')
