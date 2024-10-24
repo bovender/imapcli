@@ -10,6 +10,7 @@ PATH
       tty-progressbar (~> 0.13)
       tty-prompt (~> 0.13)
       tty-table (~> 0.9)
+      zeitwerk
 
 GEM
   remote: https://rubygems.org/
@@ -118,6 +119,7 @@ GEM
     unicode-display_width (2.6.0)
     unicode_utils (1.4.0)
     wisper (2.0.1)
+    zeitwerk (2.7.1)
 
 PLATFORMS
   aarch64-linux-gnu

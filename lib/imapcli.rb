@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
-require 'imapcli/version.rb'
-require 'imapcli/command.rb'
-require 'imapcli/client.rb'
-require 'imapcli/mailbox.rb'
-require 'imapcli/stats.rb'
-require 'imapcli/option_validator.rb'
+# require external dependencies
+require 'zeitwerk'
+
+# load zeitwerk
+Zeitwerk::Loader.for_gem.tap do |loader|
+  loader.setup
+end
+
+module Imapcli
+end

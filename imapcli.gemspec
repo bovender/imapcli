@@ -28,4 +28,5 @@ spec = Gem::Specification.new do |s|
   s.add_dependency('tty-progressbar', '~> 0.13')
   s.add_dependency('tty-prompt', '~> 0.13')
   s.add_dependency('tty-table', '~> 0.9')
+  s.add_dependency('zeitwerk')
 end
