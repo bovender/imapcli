@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.summary = 'Command-line tool to query IMAP servers'
   s.license = 'Apache-2.0'
 
+  s.required_ruby_version = '>= 3.0.0'
+
   s.files = `git ls-files`.split("\n")
 
   s.extra_rdoc_files = ['README.md', 'imapcli.rdoc']
