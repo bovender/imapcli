@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'spec_helper'
+
 RSpec.describe Imapcli::Mailbox do
   let(:mailbox) do
     described_class.new([
