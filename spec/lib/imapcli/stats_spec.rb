@@ -5,8 +5,8 @@ require 'imapcli'
 RSpec.describe Imapcli::Stats do
   let(:array) { (1..12).map { |i| i * 1024 } }
   let(:other_array) { (13..24).map { |i| i * 1024 } }
-  let(:stats) { Imapcli::Stats.new(array) }
-  let(:other_stats) { Imapcli::Stats.new(other_array) }
+  let(:stats) { described_class.new(array) }
+  let(:other_stats) { described_class.new(other_array) }
 
   it 'knows the number of items' do
     expect(stats.count).to eq 12
@@ -36,8 +36,8 @@ RSpec.describe Imapcli::Stats do
     expect { stats.add nil }.to_not raise_error
   end
 
-  context 'adding other stats' do
-    before :each do
+  context 'when adding other stats' do
+    before do
       stats.add other_stats
     end
 

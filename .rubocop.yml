@@ -8,7 +8,6 @@ AllCops:
   NewCops: enable
   Exclude:
     - bin/*
-    - spec/**/*
 
 #########
 # STYLE #
