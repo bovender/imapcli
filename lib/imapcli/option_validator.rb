@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Imapcli
   # Utility class to validate user options
   #

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Imapcli
   # In IMAP speak, a mailbox is what one would commonly call a 'folder'
   class Mailbox

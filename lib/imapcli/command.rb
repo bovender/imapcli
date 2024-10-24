@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Imapcli
   # Provides entry points for Imapcli.
   #

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Imapcli
   # Wrapper for Net::IMAP
   class Client
