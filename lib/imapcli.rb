@@ -18,8 +18,8 @@ require 'zeitwerk'
 
 # load zeitwerk
 Zeitwerk::Loader.for_gem.tap do |loader|
-  loader.setup
   loader.inflector.inflect 'cli' => 'CLI'
+  loader.setup
 end
 
 module Imapcli # rubocop:disable Style/Documentation
