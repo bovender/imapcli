@@ -288,9 +288,6 @@ following:
 I have not been able to work on this project for quite some time. It still
 serves me well when I occasionally need it. Pull requests are of course welcome.
 
-I've decided to have one `main` branch, and to get rid of the `master` and
-`
-
 This project is [semantically versioned](https://semver.org).
 
 ### To do
@@ -308,9 +305,14 @@ gem by [David Copeland](https://github.com/davetron5000) and makes extensive use
 of [Piotr Murach's](https://github.com/piotrmurach) excellent `TTY` tools. See
 the `Gemfile` for other work that this tool depends on.
 
+## Contributors
+
+- [@bovender](https://github.com/bovender)
+- [@n-rodriguez](https://github.com/n-rodriguez)
+
 ## License
 
-&copy; 2017, 2022 Daniel Kraus (bovender)
+&copy; 2017-2024 Daniel Kraus (bovender)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
