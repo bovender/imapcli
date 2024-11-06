@@ -6,3 +6,5 @@ html/
 vendor/bundle/
 .bundle/
 imapcli-*.gem
+.DS_Store
+coverage/

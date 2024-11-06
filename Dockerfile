@@ -3,13 +3,15 @@ LABEL maintainer=bovender@bovender.de
 LABEL description="Command-line tool to query IMAP servers."
 
 WORKDIR /
+ADD . /imapcli
 RUN apk add --no-cache git build-base && \
-  git clone --depth 1 https://github.com/bovender/imapcli && \
+  gem update --system && \
   cd imapcli && \
-  bundle update --bundler && \
-  bundle && \
+  # bundle config set --local without development test && \
+  bundle install && \
   apk del build-base && \
   rm -rf /var/cache/apk/*
 
 WORKDIR /imapcli
-ENTRYPOINT ["bundle", "exec", "imapcli"]
+ENTRYPOINT ["exe/imapcli"]
+

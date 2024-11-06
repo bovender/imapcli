@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Imapcli
   # Utility class to validate user options
   #
@@ -17,9 +19,7 @@ module Imapcli
       if global_options[:u].nil? || global_options[:u].empty?
         @errors << 'missing user name (use -u option or set IMAP_USER environment variable)'
       end
-      if global_options[:P] && global_options[:p]
-        @errors << '-p and -P options do not agree'
-      end
+      @errors << '-p and -P options do not agree' if global_options[:P] && global_options[:p]
 
       pass?
     end
@@ -27,7 +27,7 @@ module Imapcli
     # Validates options for the stats command.
     #
     # @return [true false] indicating success or failure; warnings can be accessed as attribute
-    def stats_options_valid?(options, args)
+    def stats_options_valid?(options, args) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
       @options = {}
       raise 'incompatible options -r/--recurse and -R/--no_recurse' if options[:r] && options[:R]
 
@@ -46,7 +46,7 @@ module Imapcli
       end
 
       if options[:sort]
-        available_sort_options = %w(count total_size min_size q1 median_size q3 max_size)
+        available_sort_options = %w[count total_size min_size q1 median_size q3 max_size]
         if available_sort_options.include? options[:sort].downcase
           @options[:sort] = options[:sort].to_sym
         else
@@ -63,7 +63,7 @@ module Imapcli
     end
 
     def warnings?
-      @warnings.count > 0
+      @warnings.count.positive?
     end
 
   end
