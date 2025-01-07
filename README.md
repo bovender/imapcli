@@ -192,7 +192,7 @@ of messages in them, this may take a little while.
 * `Min`: Size of the smallest message in the mailbox (in kiB)
 * `Q1`: First quartile of message sizes in the mailbox (in kiB)
 * `Median`: Median of all message sizes in the mailbox (in kiB)
-* `Q3`: First quartile of message sizes in the mailbox (in kiB)
+* `Q3`: Third quartile of message sizes in the mailbox (in kiB)
 * `Max`: Size of the largest message in the mailbox (in kiB)
 
 #### All mailboxes
