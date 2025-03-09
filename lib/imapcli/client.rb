@@ -155,7 +155,9 @@ module Imapcli
       if messages.empty?
         []
       else
-        query_server { connection.fetch(messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
+        messages.each_slice(1000) do |some_messages|
+          query_server { connection.fetch(some_messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
+        end
       end
     end
 
