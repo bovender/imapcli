@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
+  gem 'debug'
   gem 'guard-rspec'
   gem 'pry'
   gem 'rake'
