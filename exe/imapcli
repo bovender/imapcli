@@ -5,4 +5,4 @@ require_relative '../lib/imapcli'
 
 Dotenv.load
 
-exit Imapcli::CLI.run(ARGV)
+exit Imapcli::Cli.run(ARGV)

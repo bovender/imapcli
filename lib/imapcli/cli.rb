@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Imapcli
-  class CLI # rubocop:disable Metrics/ClassLength,Style/Documentation
+  class Cli # rubocop:disable Metrics/ClassLength,Style/Documentation
     extend GLI::App
 
     program_desc 'Command-line interface for IMAP servers'
@@ -56,7 +56,7 @@ module Imapcli
     end
 
     desc 'Collects mailbox statistics'
-    arg_name :mailbox, optional: false, multiple: true
+    arg_name :mailbox, optional: true, multiple: true
     command :stats do |c| # rubocop:disable Metrics/BlockLength
       c.switch %i[r recurse], desc: 'Recurse into sub mailboxes', negatable: false
       c.switch %i[R no_recurse], desc: 'Do not recurse into sub mailboxes', negatable: false
