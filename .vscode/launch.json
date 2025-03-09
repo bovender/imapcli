@@ -7,8 +7,14 @@
     {
       "type": "ruby_lsp",
       "request": "launch",
-      "name": "Debug program",
-      "program": "ruby exe/imapcli"
+      "name": "Run imapcli to collect stats",
+      "program": "ruby ${workspaceFolder}/exe/imapcli -s ${input:server} -u ${input:user} -p ${input:pass} stats"
+    },
+    {
+      "type": "ruby_lsp",
+      "request": "launch",
+      "name": "Run rspec",
+      "program": "rspec"
     },
     {
       "type": "ruby_lsp",
@@ -27,5 +33,22 @@
       "name": "Attach debugger",
       "request": "attach"
     }
+  ],
+  "inputs": [
+    {
+      "id": "server",
+      "type": "promptString",
+      "description": "FQDN of the mail server to connect to"
+    },
+    {
+      "id": "user",
+      "type": "promptString",
+      "description": "IMAP user"
+    },
+    {
+      "id": "pass",
+      "type": "promptString",
+      "description": "Password of the IMAP user (BE AWARE THAT THIS IS NOT ENCRYPTED IN THE DEBUG ENVIRONMENT)"
+    },
   ]
 }
