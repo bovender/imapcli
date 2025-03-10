@@ -9,15 +9,15 @@ IMAP mailbox sizes.
 
 ## Table of contents
 
-* [Motivation](#motivation)
-* [Warning](#warning)
-* [Installing and executing `imapcli`](#installing-and-executing-imapcli)
-* [Terminology](#terminology)
-* [Usage](#usage)
-* [Alternative resources](#alternative-resources)
-* [State of the project](#state-of-the-project)
-* [Credits](#credits)
-* [License](#license)
+- [Motivation](#motivation)
+- [Warning](#warning)
+- [Installing and executing `imapcli`](#installing-and-executing-imapcli)
+- [Terminology](#terminology)
+- [Usage](#usage)
+- [Alternative resources](#alternative-resources)
+- [State of the project](#state-of-the-project)
+- [Credits](#credits)
+- [License](#license)
 
 ## Motivation
 
@@ -83,7 +83,7 @@ Install:
 Run:
 
     cd imapcli
-    bundle exec bin/imapcli
+    bundle exec exe/imapcli
 
 ### Install the gem
 
@@ -106,11 +106,11 @@ smaller).
 
 Run:
 
-    docker run -it bovender/imapcli <arguments>
+    docker run -it --rm bovender/imapcli <arguments>
 
 Example:
 
-    docker run -it bovender/imapcli -s myserver.example.com -u user -P info
+    docker run -it --rm bovender/imapcli -s myserver.example.com -u user -P info
 
 The Docker repository is at <https://hub.docker.com/r/bovender/imapcli>.
 
@@ -124,7 +124,7 @@ have their mails organized in **folders**; in IMAP speak, a folder is a **maibox
 For basic usage instructions and possible options, run `imapcli` and examine
 the output. Please note that `imapcli` distinguishes between global and
 command-specific options. Global options *precede* and command-specific options
-*follow* a `command`, see the output of `imapcli` (without command or options)
+-follow* a `command`, see the output of `imapcli` (without command or options)
 for more information.
 
 Note: The following examples use the command `imapcli`. Depending on how you
@@ -187,13 +187,15 @@ of messages in them, this may take a little while.
 
 `imapcli` prints the following statistics about the message sizes in a mailbox:
 
-* `Count`: Number of individual messages
-* `Total size`: Total size of all messages in the mailbox (in kiB)
-* `Min`: Size of the smallest message in the mailbox (in kiB)
-* `Q1`: First quartile of message sizes in the mailbox (in kiB)
-* `Median`: Median of all message sizes in the mailbox (in kiB)
-* `Q3`: Third quartile of message sizes in the mailbox (in kiB)
-* `Max`: Size of the largest message in the mailbox (in kiB)
+- `Count`: Number of individual messages
+- `Total size`: Total size of all messages in the mailbox
+- `Min`: Size of the smallest message in the mailbox
+- `Q1`: First quartile of message sizes in the mailbox
+- `Median`: Median of all message sizes in the mailbox
+- `Q3`: Third quartile of message sizes in the mailbox
+- `Max`: Size of the largest message in the mailbox
+
+Use the `-H` or `--human` switch to output the message sizes with SI prefixes.
 
 #### All mailboxes
 
@@ -245,13 +247,20 @@ Use the `-r`/`--recurse` flag:
 By default, mailboxes are sorted alphabetically. To sort by a specific statistic,
 use an `-o`/`--sort` option:
 
-* `-o count`
-* `-o total_size`
-* `-o min_size`
-* `-o q1`
-* `-o median_size`
-* `-o q3`
-* `-o max_size`
+- `-o count`
+- `-o total_size`
+- `-o min_size`
+- `-o q1_size`
+- `-o median_size`
+- `-o q3_size`
+- `-o max_size`
+
+This will sort the output from smallest to largest (ascending).
+
+Use the `--reverse` switch to sort from largest to smallest (descending).
+
+Note that these are options to the `stats` command and need to come after the `stats`
+keyword, as shown below.
 
 Example:
 
@@ -268,18 +277,18 @@ following:
 
 ### IMAP folder size script
 
-* <https://code.iamcal.com/pl/imap_folders>
+- <https://code.iamcal.com/pl/imap_folders>
 
   Ad-hoc perl script that computes the sizes of each mailbox. `imapcli` was
   inspired by this!
 
 ### IMAP synchronization and backup tools
 
-* <https://github.com/OfflineIMAP/imapfw>
+- <https://github.com/OfflineIMAP/imapfw>
 
   Framework to work with mails
 
-* <https://github.com/polo2ro/imapbox>
+- <https://github.com/polo2ro/imapbox>
 
   Pull down e-mails from an IMAP server to your local disk
 
@@ -292,11 +301,11 @@ This project is [semantically versioned](https://semver.org).
 
 ### To do
 
-* More human-friendly number formatting (e.g., MiB/GiB as appropriate)
-* Output to file
-* Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
-* Man page
-* More commands?
+[x] More human-friendly number formatting (e.g., MiB/GiB as appropriate)
+[ ] Output to file
+[ ] Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
+[ ] Man page
+[ ] More commands?
 
 ## Credits
 
@@ -312,7 +321,7 @@ the `Gemfile` for other work that this tool depends on.
 
 ## License
 
-&copy; 2017-2024 Daniel Kraus (bovender)
+&copy; 2017-2025 Daniel Kraus (@bovender)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
