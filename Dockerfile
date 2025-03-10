@@ -1,6 +1,6 @@
 FROM ruby:alpine
-LABEL maintainer=bovender@bovender.de
-LABEL description="Command-line tool to query IMAP servers."
+LABEL maintainer="bovender@bovender.de"
+LABEL description="Command-line tool to query IMAP servers, collect stats etc."
 
 WORKDIR /
 ADD . /imapcli
