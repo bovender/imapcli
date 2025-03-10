@@ -98,25 +98,25 @@ RSpec.describe Imapcli::Command do
       end
 
       it 'sorts by number of messages' do
-        output = command.stats('Inbox', depth: -1, sort: :count, sort_order: :desc)
+        output = command.stats('Inbox', depth: -1, sort: :count, reverse: true)
         expect(output).to be_a Array
         expect(output[0][0]).to eq 'Inbox/Foo/Sub'
       end
 
       it 'sorts by total message size' do
-        output = command.stats('Inbox', depth: -1, sort: :total_size, sort_order: :desc)
+        output = command.stats('Inbox', depth: -1, sort: :total_size, reverse: true)
         expect(output).to be_a Array
         expect(output[0][0]).to eq 'Inbox/Foo'
       end
 
       it 'sorts by largest message' do
-        output = command.stats('Inbox', depth: -1, sort: :max_size, sort_order: :desc)
+        output = command.stats('Inbox', depth: -1, sort: :max_size, reverse: true)
         expect(output).to be_a Array
         expect(output[0][0]).to eq 'Inbox/Bar/Sub'
       end
 
       it 'sorts by smallest message' do
-        output = command.stats('Inbox', depth: -1, sort: :min_size, sort_order: :desc)
+        output = command.stats('Inbox', depth: -1, sort: :min_size, reverse: true)
         expect(output).to be_a Array
         # binding.pry
         expect(output[0][0]).to eq 'Inbox/Foo'

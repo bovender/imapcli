@@ -26,8 +26,8 @@ module Imapcli
         output << "capability: #{@client.capability.join(' ')}"
         output << "hierarchy separator: #{@client.separator}"
         if @client.supports_quota
-          usage = Filesize.from("#{@client.quota[0]} kB").pretty
-          available = Filesize.from("#{@client.quota[1]} kB").pretty
+          usage = ActiveSupport::NumberHelper.number_to_human_size(@client.quota[0])
+          available = ActiveSupport::NumberHelper.number_to_human_size(@client.quota[1])
           output << "quota: #{usage} used, #{available} available (#{@client.quota[2].round(1)}%)"
         else
           output << 'quota: IMAP QUOTA extension not supported by this server'
@@ -139,7 +139,7 @@ module Imapcli
     end
 
     def sorted_list(list, options = {}) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
-      sorted = case options[:sort].to_sym
+      sorted = case options[:sort]&.to_sym
                when :count
                  list.sort_by { |mailbox| mailbox.stats.count }
                when :total_size

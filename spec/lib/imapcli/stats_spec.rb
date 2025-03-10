@@ -14,23 +14,23 @@ RSpec.describe Imapcli::Stats do
   end
 
   it 'computes the minimum' do
-    expect(stats.min_size).to eq 1
+    expect(stats.min_size).to eq 1 * 1024
   end
 
   it 'computes the maximum' do
-    expect(stats.max_size).to eq 12
+    expect(stats.max_size).to eq 12 * 1024
   end
 
   it 'computes the median' do
-    expect(stats.median_size).to eq 7 # response is rounded
+    expect(stats.median_size).to eq 6656
   end
 
   it 'computes the first quartile' do
-    expect(stats.quartile_1_size).to eq 4 # response is rounded
+    expect(stats.quartile_1_size).to eq 3840
   end
 
   it 'computes the third quartile' do
-    expect(stats.quartile_3_size).to eq 9 # response is rounded
+    expect(stats.quartile_3_size).to eq 9472
   end
 
   it 'adds nothing if other stats are nil' do
@@ -47,23 +47,23 @@ RSpec.describe Imapcli::Stats do
     end
 
     it 'computes the minimum' do
-      expect(stats.min_size).to eq 1
+      expect(stats.min_size).to eq 1 * 1024
     end
 
     it 'computes the maximum' do
-      expect(stats.max_size).to eq 24
+      expect(stats.max_size).to eq 24 * 1024
     end
 
     it 'computes the median' do
-      expect(stats.median_size).to eq 13 # response is rounded
+      expect(stats.median_size).to eq 12800
     end
 
     it 'computes the first quartile' do
-      expect(stats.quartile_1_size).to eq 7 # response is rounded
+      expect(stats.quartile_1_size).to eq 6912
     end
 
     it 'computes the third quartile' do
-      expect(stats.quartile_3_size).to eq 18 # response is rounded
+      expect(stats.quartile_3_size).to eq 18688
     end
 
   end
