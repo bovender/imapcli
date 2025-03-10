@@ -71,7 +71,6 @@ module Imapcli
         output = sorted_list(list, options).map do |mailbox|
           stats_to_table(mailbox.full_name, mailbox.stats)
         end
-        # output << Array.new(8, '======')
         output << stats_to_table('Total', total_stats) if list.length > 1
         output
       end
@@ -140,7 +139,7 @@ module Imapcli
     end
 
     def sorted_list(list, options = {}) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
-      sorted = case options[:sort]
+      sorted = case options[:sort].to_sym
                when :count
                  list.sort_by { |mailbox| mailbox.stats.count }
                when :total_size
@@ -149,9 +148,9 @@ module Imapcli
                  list.sort_by { |mailbox| mailbox.stats.median_size }
                when :min_size
                  list.sort_by { |mailbox| mailbox.stats.min_size }
-               when :q1
+               when :q1_size
                  list.sort_by { |mailbox| mailbox.stats.q1 }
-               when :q3
+               when :q3_size
                  list.sort_by { |mailbox| mailbox.stats.q3 }
                when :max_size
                  list.sort_by { |mailbox| mailbox.stats.max_size }
@@ -160,7 +159,7 @@ module Imapcli
                else
                  raise "invalid sort option: #{options[:sort]}"
                end
-      options[:sort_order] == :desc ? sorted.reverse : sorted
+      options[:reverse] ? sorted.reverse : sorted
     end
 
   end

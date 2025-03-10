@@ -23,27 +23,27 @@ module Imapcli
     end
 
     def total_size
-      @total_size ||= convert_bytes(@message_sizes.sum)
+      @total_size ||= @message_sizes.sum
     end
 
     def min_size
-      @min_size ||= convert_bytes(@message_sizes.min)
+      @min_size ||= @message_sizes.min
     end
 
     def quartile_1_size
-      @quartile_1_size ||= convert_bytes(@message_sizes.percentile(25))
+      @quartile_1_size ||= @message_sizes.percentile(25)
     end
 
     def median_size
-      @median_size ||= convert_bytes(@message_sizes.median)
+      @median_size ||= @message_sizes.median
     end
 
     def quartile_3_size
-      @quartile_3_size ||= convert_bytes(@message_sizes.percentile(75))
+      @quartile_3_size ||= @message_sizes.percentile(75)
     end
 
     def max_size
-      @max_size ||= convert_bytes(@message_sizes.max)
+      @max_size ||= @message_sizes.max
     end
 
     protected
@@ -51,11 +51,6 @@ module Imapcli
     attr_accessor :message_sizes
 
     private
-
-    # Converts a number of bytes to kiB.
-    def convert_bytes(bytes)
-      bytes&.fdiv(1024)&.round
-    end
 
     def invalidate
       @count, @total_size, @min, @max, @q1, @q3, @median = nil # sets others to nil too

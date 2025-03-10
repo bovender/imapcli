@@ -58,17 +58,30 @@ module Imapcli
     desc 'Collects mailbox statistics'
     arg_name :mailbox, optional: true, multiple: true
     command :stats do |c| # rubocop:disable Metrics/BlockLength
-      c.switch %i[r recurse], desc: 'Recurse into sub mailboxes', negatable: false
-      c.switch %i[R no_recurse], desc: 'Do not recurse into sub mailboxes', negatable: false
-      c.flag %i[o sort], desc: 'Order', arg_name: 'property'
-      c.switch %i[O reverse], desc: 'Reverse sort order (largest first)', negatable: false
+      c.switch %i[r recurse],
+        desc: 'Recurse into sub mailboxes',
+        negatable: false
+      c.switch %i[R no_recurse],
+        desc: 'Do not recurse into sub mailboxes',
+        negatable: false
+      c.switch %i[H human],
+        desc: 'Convert byte counts to human-friendly formats',
+        negatable: false
+      c.flag %i[o sort],
+        desc: 'Ordered (sorted) results',
+        arg_name: 'sort_property',
+        must_match: %w[count total_size median_size min_size q1_size q3_size max_size],
+        default: 'total_size'
+      c.switch %i[reverse], desc: 'Reverse sort order (largest first)', negatable: false
       c.switch [:csv], desc: 'Output comma-separated values (CSV)'
 
       c.action do |_global_options, options, args| # rubocop:disable Metrics/BlockLength
         raise unless @validator.stats_options_valid?(options, args)
 
         progress_bar = nil
-        body = @command.stats(args, @validator.options) do |n|
+
+        head = ['Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max']
+        body = @command.stats(args, options) do |n|
           if progress_bar
             progress_bar.advance
           else
@@ -79,19 +92,34 @@ module Imapcli
             )
           end
         end
+        formatted_body = body.map do |row|
+          row[0..1] + row[2..].map { |cell| format_bytes(cell, options[:human]) }
+        end
 
-        head = ['Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max']
         if options[:csv]
-          @prompt.warn 'notice: messages sizes in CSV output are in kiB (1024 bytes)'
+          unless options[:human]
+            @prompt.warn 'notice: BREAKING CHANGE IN VERSION 2: messages sizes in CSV output are now given in bytes, not kiB'
+          end
           @prompt.say head.to_csv
           last_mailbox_line = body.length == 1 ? -1 : -2 # skip grand total if present
-          body[0..last_mailbox_line].each { |row| @prompt.say row.to_csv }
+          formatted_body[0..last_mailbox_line].each { |row| @prompt.say row.to_csv }
         else
-          nice_body = body.map do |row|
-            row[0..1] + row[2..].map { |cell| format_kib(cell) }
+          formatted_body = formatted_body.insert(0, :separator).insert(-2, :separator)
+
+          if options[:human]
+            @prompt.say "notice: -H/--human flag present, message sizes are given with SI prefixes"
+          else
+            @prompt.say "notice: message sizes are given in bytes"
           end
-          table = TTY::Table.new(head, nice_body)
-          @prompt.say table.render(:unicode, alignments: [:left] + Array.new(7, :right))
+
+          table = TTY::Table.new(head, formatted_body)
+          rendered_table = table.render(:unicode) do |renderer|
+            renderer.alignments =  [:left] + Array.new(7, :right)
+            renderer.border.style = :blue
+          end
+          @prompt.say rendered_table
+
+          # If any unknown mailboxes were requested, print an informative footer
           if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
             @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
           end
@@ -99,12 +127,8 @@ module Imapcli
       end
     end
 
-    def self.format_kib(kib)
-      if kib
-        "#{kib.to_s.reverse.gsub(/...(?=.)/, '\&,').reverse} kiB"
-      else
-        'NA'
-      end
+    def self.format_bytes(bytes, human = false)
+      human ? ActiveSupport::NumberHelper.number_to_human_size(bytes) : bytes
     end
 
     pre do |global, _command, _options, _args|

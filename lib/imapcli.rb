@@ -1,19 +1,14 @@
 # frozen_string_literal: true
 
-# require ruby dependencies
+require 'active_support'
 require 'csv'
-require 'net/imap'
-# require 'pp'
-
-# require external dependencies
-# require 'pry'
 require 'descriptive_statistics'
-require 'filesize'
-require 'gli'
 require 'dotenv'
+require 'gli'
+require 'net/imap'
+require 'tty-progressbar'
 require 'tty-prompt'
 require 'tty-table'
-require 'tty-progressbar'
 require 'zeitwerk'
 
 # load zeitwerk
