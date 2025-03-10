@@ -7,8 +7,8 @@
     {
       "type": "ruby_lsp",
       "request": "launch",
-      "name": "Run imapcli to collect stats",
-      "program": "ruby ${workspaceFolder}/exe/imapcli -s ${input:server} -u ${input:user} -p ${input:pass} stats"
+      "name": "Run imapcli with arguments",
+      "program": "ruby ${workspaceFolder}/exe/imapcli -s ${input:server} -u ${input:user} -p ${input:pass} ${input:command}"
     },
     {
       "type": "ruby_lsp",
@@ -49,6 +49,11 @@
       "id": "pass",
       "type": "promptString",
       "description": "Password of the IMAP user (BE AWARE THAT THIS IS NOT ENCRYPTED IN THE DEBUG ENVIRONMENT)"
+    },
+    {
+      "id": "command",
+      "type": "promptString",
+      "description": "Command with optional arguments"
     },
   ]
 }
