@@ -145,18 +145,16 @@ module Imapcli
     # * :q3: Third quartile of messages sizes.
     # * :max: Size of largest message.
     def message_sizes(mailbox)
-      # Could use the EXAMINE command to get the number of messages in a mailbox,
-      # but we need to retrieve an array of message indexes anyway (to compute
-      # the total mailbox size), so we can save one roundtrip to the server.
-      # query_server { connection.examine(mailbox) }
-      # total = connection.responses['EXISTS'][0]
-      # unseen = query_server { connection.search('UNSEEN') }.length
       messages = messages(mailbox)
       if messages.empty?
         []
       else
-        messages.each_slice(1000) do |some_messages|
-          query_server { connection.fetch(some_messages, 'RFC822.SIZE').map { |f| f.attr['RFC822.SIZE'] } }
+        query_server do
+          messages.each_slice(1000).map do |some_messages|
+            connection.fetch(some_messages, 'RFC822.SIZE').map do |f|
+              f.attr['RFC822.SIZE']
+            end
+          end.flatten
         end
       end
     end
