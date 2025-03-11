@@ -138,28 +138,30 @@ module Imapcli
       end
     end
 
-    def sorted_list(list, options = {}) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
-      sorted = case options[:sort]&.to_sym
-               when :count
-                 list.sort_by { |mailbox| mailbox.stats.count }
-               when :total_size
-                 list.sort_by { |mailbox| mailbox.stats.total_size }
-               when :median_size
-                 list.sort_by { |mailbox| mailbox.stats.median_size }
-               when :min_size
-                 list.sort_by { |mailbox| mailbox.stats.min_size }
-               when :q1_size
-                 list.sort_by { |mailbox| mailbox.stats.q1 }
-               when :q3_size
-                 list.sort_by { |mailbox| mailbox.stats.q3 }
-               when :max_size
-                 list.sort_by { |mailbox| mailbox.stats.max_size }
-               when nil
-                 list
-               else
-                 raise "invalid sort option: #{options[:sort]}"
-               end
-      options[:reverse] ? sorted.reverse : sorted
+    def sorted_list(list, options)
+      return list if options.nil? || options[:sort].nil?
+      sort_property = options[:sort]&.to_sym
+      if %i[count total_size min_size q1 median_size q3 max_size].include? sort_property
+        sorted = sort_mailboxes(list, sort_property, options[:reverse])
+      else
+        raise "invalid sort option: #{options[:sort]}"
+      end
+    end
+
+    private
+    
+    # Sorts a list of mailboxes according to a given property
+    # such as total count of e-mails, total size of all e-mails etc.
+    # Some mailboxes may not have this property, e.g., an empty
+    # mailbox will have `nil` values for median_size etc.
+    # We always sort mailboxes with `nil` values to the bottom.
+    def sort_mailboxes(mailboxes, property, reverse)
+      # Devide ary into two parts, one part where the property has a value
+      # and the other where the property is nil.
+      partitions = mailboxes.partition { |mailbox| mailbox.stats.send(property) }
+      sorted = partitions[0].sort_by { |mailbox| mailbox.stats.send(property) }
+      sorted = sorted.reverse if reverse
+      sorted + partitions[1]
     end
 
   end
