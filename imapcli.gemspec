@@ -22,10 +22,10 @@ Gem::Specification.new do |s|
   s.bindir = 'exe'
   s.executables = ['imapcli']
 
+  s.add_dependency('activesupport', '~> 8.0')
   s.add_dependency('csv')
   s.add_dependency('descriptive_statistics', '~> 2.5')
   s.add_dependency('dotenv', '~> 3.1')
-  s.add_dependency('activesupport', '~> 8.0')
   s.add_dependency('gli', '~> 2.22')
   s.add_dependency('net-imap')
   s.add_dependency('tty-progressbar', '~> 0.18')

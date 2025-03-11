@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 2.0.1 (2025-03-11)][v2.0.1]
+
+### Fixed
+
+- Do not crash with empty IMAP mailboxes.
+
 ## [Version 2.0.0 (2025-03-10)][v2.0.0]
 
 ### Added
@@ -66,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix: Docker image.
 - Fix: Options error message.
 
+[v2.0.1]: https://github.com/bovender/imapcli/releases/tag/v2.0.1
 [v2.0.0]: https://github.com/bovender/imapcli/releases/tag/v2.0.0
 [v1.0.7]: https://github.com/bovender/imapcli/releases/tag/v1.0.7
 [v1.0.5]: https://github.com/bovender/imapcli/releases/tag/v1.0.5
