@@ -15,7 +15,6 @@ IMAP mailbox sizes.
 - [Terminology](#terminology)
 - [Usage](#usage)
 - [Alternative resources](#alternative-resources)
-- [State of the project](#state-of-the-project)
 - [Credits](#credits)
 - [License](#license)
 
@@ -292,20 +291,13 @@ following:
 
   Pull down e-mails from an IMAP server to your local disk
 
-## State of the project
-
-I have not been able to work on this project for quite some time. It still
-serves me well when I occasionally need it. Pull requests are of course welcome.
-
-This project is [semantically versioned](https://semver.org).
-
 ### To do
 
-[x] More human-friendly number formatting (e.g., MiB/GiB as appropriate)
-[ ] Output to file
-[ ] Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
-[ ] Man page
-[ ] More commands?
+- [x] More human-friendly number formatting (e.g., MiB/GiB as appropriate)
+- [ ] Output to file
+- [ ] Deal with server-specific mailbox separator characters (e.g. '.' vs. '/')
+- [ ] Man page
+- [ ] More commands?
 
 ## Credits
 
