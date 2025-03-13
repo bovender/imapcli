@@ -263,7 +263,18 @@ keyword, as shown below.
 
 Example:
 
-    bundle exec -it bin/imapcli -s yourserver.example.com -u myusername -P stats -r -o max_size Archive
+    docker run -it bin/imapcli -s yourserver.example.com -u myusername -P stats -r -o max_size Archive
+
+#### Limiting the number of mailboxes
+
+You can limit the number of mailboxes (folders) in the output table with the
+`-l`/`--limit` flag. This flag takes an argument that indicates the maximum
+number of mailboxes. THe default value for this argument is 10.
+
+Use case: Say you have a very large IMAP account, and you would like to know the
+5 folders that contain the largest messages. The command should be:
+
+    imapcli -s yourserver.example.com -u myusername -P stats -o max_size --limit 5 
 
 #### Obtaining comma-separated values (CSV)
 

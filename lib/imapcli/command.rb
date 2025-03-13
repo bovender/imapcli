@@ -68,7 +68,12 @@ module Imapcli
             yield current_count if block_given?
           end
         end
-        output = sorted_list(list, options).map do |mailbox|
+
+        output = if options[:limit]
+          sorted_list(list, options).first(options[:limit].to_i)
+        else
+          sorted_list(list, options)
+        end.map do |mailbox|
           stats_to_table(mailbox.full_name, mailbox.stats)
         end
         output << stats_to_table('Total', total_stats) if list.length > 1

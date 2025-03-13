@@ -133,6 +133,11 @@ RSpec.describe Imapcli::Command do
         expect(output).to be_a Array
         expect(output[0][0]).to eq 'Inbox/Smallest/Messages'
       end
+
+      it 'returns only the first n mailboxes' do
+        output = command.stats('Inbox', depth: -1, limit: 2)
+        expect(output.length).to eq 3 # including summary line
+      end
     end
 
   end

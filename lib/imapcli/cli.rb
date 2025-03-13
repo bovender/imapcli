@@ -74,6 +74,10 @@ module Imapcli
         default: 'total_size'
       c.switch %i[reverse], desc: 'Reverse sort order (largest first)', negatable: false
       c.switch [:csv], desc: 'Output comma-separated values (CSV)'
+      c.flag %i[l limit],
+        desc: 'Limit the results to n folders (IMAP mailboxes)',
+        arg_name: 'max_lines',
+        default: 10
 
       c.action do |_global_options, options, args| # rubocop:disable Metrics/BlockLength
         raise unless @validator.stats_options_valid?(options, args)
