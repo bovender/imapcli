@@ -70,7 +70,7 @@ module Imapcli
         end
 
         output = if options[:limit]
-          sorted_list(list, options).first(options[:limit].to_i)
+          sorted_list(list, options).last(options[:limit].to_i)
         else
           sorted_list(list, options)
         end.map do |mailbox|
