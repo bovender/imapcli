@@ -280,6 +280,17 @@ Use case: Say you have a very large IMAP account, and you would like to know the
 
 Use the `--csv` flag.
 
+### Writing IMAP responses to file
+
+Using the `-O`/`--log-output` flag, you can have `imapcli` write the IMAP responses
+to a file in JSON format:
+
+```bash
+imapcli -s yourserver.example.com -u username -P -O output_file.json stats Inbox 
+```
+
+**WARNING:** The output file will be overwritten without notice!
+
 ## Alternative resources
 
 While researching command-line tools for IMAP servers, I came across the

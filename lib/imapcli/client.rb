@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
+require 'json'
+
 module Imapcli
   # Wrapper for Net::IMAP
   class Client # rubocop:disable Metrics/ClassLength
     attr_accessor :port, :user, :pass
-    attr_reader :responses
 
     ## Initializs the Client class.
     ##
@@ -17,7 +18,7 @@ module Imapcli
       self.server = server_with_optional_port
       @user = user
       @pass = pass
-      clear_log
+      clear_responses
     end
 
     # Attribute reader for the server domain name
@@ -57,8 +58,13 @@ module Imapcli
     end
 
     # Clears the server response log
-    def clear_log
+    def clear_responses
       @log = []
+    end
+
+    # Returns the IMAP server response log
+    def responses
+      @log
     end
 
     # Returns the last response from the server
@@ -96,17 +102,17 @@ module Imapcli
     # Returns the server's greeting (which may reveal the server software name
     # such as 'Dovecot').
     def greeting
-      query_server { connection.greeting.data.text.strip }
+      query_server('greeting') { connection.greeting.data.text.strip }
     end
 
     # Returns the server's capabilities.
     def capability
-      @capability ||= query_server { connection.capability }
+      @capability ||= query_server('capability') { connection.capability }
     end
 
     # Returns the character that is used to separate nested mailbox names.
     def separator
-      @separator ||= query_server { connection.list('', '')[0].delim }
+      @separator ||= query_server("list('')") { connection.list('', '')[0].delim }
     end
 
     # Returns true if the server supports the IMAP QUOTA extension.
@@ -120,7 +126,7 @@ module Imapcli
       return unless supports_quota
 
       @quota ||= begin
-        info = query_server { @connection.getquotaroot('INBOX')[1] }
+        info = query_server("getquotaroot('INBOX')") { @connection.getquotaroot('INBOX')[1] }
         percent = info.quota.to_i.positive? ? info.usage.to_i.fdiv(info.quota.to_i) * 100 : nil
         [info.usage, info.quota, percent]
       end
@@ -130,8 +136,8 @@ module Imapcli
     #
     # The value is currently NOT cached.
     def messages(mailbox)
-      query_server { connection.examine(mailbox) }
-      query_server { connection.search('ALL') }
+      query_server("examine('#{mailbox}')") { connection.examine(mailbox) }
+      query_server("search('ALL')") { connection.search('ALL') }
     end
 
     # Examines a mailbox and returns statistics about the messages in it.
@@ -149,7 +155,7 @@ module Imapcli
       if messages.empty?
         []
       else
-        query_server do
+        query_server('fetch(...)') do
           messages.each_slice(1000).map do |some_messages|
             connection.fetch(some_messages, 'RFC822.SIZE').map do |f|
               f.attr['RFC822.SIZE']
@@ -168,7 +174,7 @@ module Imapcli
     #
     # The value is cached.
     def mailboxes
-      @mailboxes ||= query_server { @connection.list('', '*') }
+      @mailboxes ||= query_server('list') { @connection.list('', '*') }
     end
 
     # Returns a tree of +Imapcli::Mailbox+ objects.
@@ -188,12 +194,10 @@ module Imapcli
     private
 
     def response_ok?(response)
-      @log << response
       response.name == 'OK'
     end
 
     def log_error(error)
-      @log << error
       false
     end
 
@@ -203,12 +207,30 @@ module Imapcli
     # error if not. The code that queries the server must be contained in the
     # +block+, and the +block+'s return value is returned by this function.
     # The +connection+'s responses are logged.
-    def query_server
+    def query_server(imap_command)
       raise('no connection to a server') unless connection
 
       result = yield
-      @log << connection.responses
+      @log << {
+                'imap_command': imap_command,
+                'imap_response': connection.responses.to_h
+              }
       result
+    end
+
+    # Recursively convert structs in an array of hashes to hashes
+    # Inspired by  https://stackoverflow.com/a/62804063/270712
+    # and rephrased to improve readability a bit
+    def to_h_recursively(hash)
+      hash.map do |value|
+        if value.is_a?(Arry)
+          to_h_recursively(value)
+        elsif value.is_a?(Struct)
+          value.to_h
+        else
+          value
+        end
+     end
     end
 
   end

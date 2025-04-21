@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'multi_json'
+require 'oj'
+
 module Imapcli
   class Cli # rubocop:disable Metrics/ClassLength,Style/Documentation
     extend GLI::App
@@ -31,8 +34,8 @@ module Imapcli
     desc 'Prompt for password'
     switch %i[P prompt], negatable: false
 
-    desc 'Verbose output (e.g., response values from Rubys Net::IMAP)'
-    switch %i[v verbose], negatable: false
+    desc 'Output responses from Rubys Net::IMAP to file in JSON format. File will be overwritten if it exists!'
+    flag %i[O log-output]
 
     desc 'Tests if the server is available and log-in succeeds with the credentials'
     command :check do |c|
@@ -89,7 +92,7 @@ module Imapcli
           if progress_bar
             progress_bar.advance
           else
-            @prompt.say "info: collecting stats for #{n} folders" if n > 1
+            @prompt.warn "info: collecting stats for #{n} folders" if n > 1
             progress_bar = TTY::ProgressBar.new(
               'collecting stats... :current/:total (:percent, :eta remaining)',
               total: n, clear: true
@@ -111,9 +114,9 @@ module Imapcli
           formatted_body = formatted_body.insert(0, :separator).insert(-2, :separator)
 
           if options[:human]
-            @prompt.say "notice: -H/--human flag present, message sizes are given with SI prefixes"
+            @prompt.warn "notice: -H/--human flag present, message sizes are given with SI prefixes"
           else
-            @prompt.say "notice: message sizes are given in bytes"
+            @prompt.warn "notice: message sizes are given in bytes"
           end
 
           table = TTY::Table.new(head, formatted_body)
@@ -143,27 +146,25 @@ module Imapcli
       global[:p] = @prompt.mask 'Enter password:' if global[:P]
       global[:p] ||= ENV.fetch('IMAP_PASS', nil)
 
-      client = Imapcli::Client.new(global[:s], global[:u], global[:p])
+      @client = Imapcli::Client.new(global[:s], global[:u], global[:p])
       @prompt.say "server: #{global[:s]}"
       @prompt.say "user: #{global[:u]}"
-      raise 'invalid server name' unless client.server_valid?
-      raise 'invalid user name' unless client.user_valid?
+      raise 'invalid server name' unless @client.server_valid?
+      raise 'invalid user name' unless @client.user_valid?
 
       @prompt.warn 'warning: no password was provided (missing -p/-P option)' unless global[:p]
-      raise 'unable to connect to server' unless client.connection
+      raise 'unable to connect to server' unless @client.connection
 
-      @command = Imapcli::Command.new(client)
+      @command = Imapcli::Command.new(@client)
 
       true
     end
 
     post do |global, _command, _options, _args|
       @client&.logout
-      if global[:v]
-        @prompt.say "\n>>> --verbose switch on, listing server responses <<<"
-        @client.responses.each do |response|
-          @prompt.say response
-        end
+      if file_name = global[:o]
+        @prompt.warn "notice: writing IMAP responses to #{file_name.dump}"
+        File.write(file_name, Oj.dump(@client.responses, mode: :object, indent: 2, escape: :unicode_xss, symbolize_names: false))
       end
     end
 

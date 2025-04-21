@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency('dotenv', '~> 3.1')
   s.add_dependency('gli', '~> 2.22')
   s.add_dependency('net-imap')
+  s.add_dependency('oj', '~> 3.16')
   s.add_dependency('tty-progressbar', '~> 0.18')
   s.add_dependency('tty-prompt', '~> 0.23')
   s.add_dependency('tty-table', '~> 0.12')
