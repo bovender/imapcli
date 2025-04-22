@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Version 3.0.0 (2025-04-21)][v3.0.0]
 
+### Fixed
+
+- Docker image now works again (fixes #10).
+
+## [Version 3.0.0 (2025-04-21)][v3.0.0]
+
 ### Changed
 
  - **BREAKING:** Removed the `-v`/`--verbose` switch which was not functional

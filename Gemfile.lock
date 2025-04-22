@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    imapcli (3.0.0)
+    imapcli (3.0.1)
       activesupport (~> 8.0)
       csv
       descriptive_statistics (~> 2.5)
