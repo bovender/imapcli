@@ -1,13 +1,12 @@
 PATH
   remote: .
   specs:
-    imapcli (2.1.0)
+    imapcli (3.0.0)
       activesupport (~> 8.0)
       csv
       descriptive_statistics (~> 2.5)
       dotenv (~> 3.1)
       gli (~> 2.22)
-      multi_json (~> 1.15)
       net-imap
       oj (~> 3.16)
       tty-progressbar (~> 0.18)
@@ -95,7 +94,6 @@ GEM
     lumberjack (1.2.10)
     method_source (1.1.0)
     minitest (5.25.5)
-    multi_json (1.15.0)
     nenv (0.3.0)
     net-imap (0.5.6)
       date
