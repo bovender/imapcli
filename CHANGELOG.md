@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Version 3.0.1 (2025-06-29)][v3.0.1]
+
+### Changed
+
+- Updated dependencies.
+
+### Fixed
+
+- Docker image now works again for real (finally fixes #10?).
+
 ## [Version 3.0.0 (2025-04-21)][v3.0.0]
 
 ### Fixed
@@ -93,6 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix: Docker image.
 - Fix: Options error message.
 
+[v3.0.1]: https://github.com/bovender/imapcli/releases/tag/v3.0.1
 [v3.0.0]: https://github.com/bovender/imapcli/releases/tag/v3.0.0
 [v2.1.0]: https://github.com/bovender/imapcli/releases/tag/v2.1.0
 [v2.0.1]: https://github.com/bovender/imapcli/releases/tag/v2.0.1
