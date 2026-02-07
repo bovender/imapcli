@@ -46,7 +46,7 @@ module Imapcli
     #
     # If a block is given, it is called with the current mailbox count and the
     # total mailbox count so that current progress can be computed.
-    def stats(mailbox_names = [], options = {}) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
+    def stats(mailbox_names = [], options = {}, skipped_mailboxes = []) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity,Metrics/PerceivedComplexity
       mailbox_names = [mailbox_names] unless mailbox_names.is_a? Array
       perform do
         # Map the command line arguments to Imapcli::Mailbox objects
@@ -59,11 +59,14 @@ module Imapcli
         current_count = 0
         yield list.length if block_given?
         total_stats = Stats.new
+        
+        skip_errors = options.fetch(:'skip-errors', true)
+        
         list.each do |mailbox|
           # Since we are working on a flat list of mailboxes, set the maximum
           # level to 0 when collecting stats.
-          mailbox.collect_stats(@client, 0) do |stats|
-            total_stats.add(stats)
+          mailbox.collect_stats(@client, 0, skip_errors: skip_errors, skipped_mailboxes: skipped_mailboxes) do |stats|
+            total_stats.add(stats) if stats
             current_count += 1
             yield current_count if block_given?
           end
@@ -74,8 +77,8 @@ module Imapcli
         else
           sorted_list(list, options)
         end.map do |mailbox|
-          stats_to_table(mailbox.full_name, mailbox.stats)
-        end
+          mailbox.stats ? stats_to_table(mailbox.full_name, mailbox.stats) : nil
+        end.compact
         output << stats_to_table('Total', total_stats) if list.length > 1
         output
       end

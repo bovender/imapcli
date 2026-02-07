@@ -106,15 +106,30 @@ module Imapcli
     #
     # If a block is given, it is called with the Imapcli::Stats object for this
     # mailbox.
-    def collect_stats(client, max_level = nil, &block)
+    def collect_stats(client, max_level = nil, skip_errors: true, skipped_mailboxes: nil, &block)
       return if @stats
 
-      @stats = Stats.new(client.message_sizes(full_name)) if full_name # proceed only if this is a mailbox of its own
-      yield @stats if block_given?
+      # proceed only if this is a mailbox of its own
+      if full_name
+        begin
+          @stats = Stats.new(client.message_sizes(full_name))
+          yield @stats if block_given?
+        rescue Net::IMAP::NoResponseError => e
+          # Errore IMAP: mailbox non esiste o non è accessibile
+          handle_mailbox_error(e, skip_errors, skipped_mailboxes)
+        rescue Net::IMAP::ByeResponseError => e
+          # Server ha chiuso la connessione
+          handle_mailbox_error(e, skip_errors, skipped_mailboxes)
+        rescue StandardError => e
+          # Altro tipo di errore
+          handle_mailbox_error(e, skip_errors, skipped_mailboxes)
+        end
+      end
+      
       return unless max_level.nil? || level < max_level
 
       @children.each_value do |child|
-        child.collect_stats(client, max_level, &block)
+        child.collect_stats(client, max_level, skip_errors: skip_errors, skipped_mailboxes: skipped_mailboxes, &block)
       end
     end
 
@@ -172,6 +187,32 @@ module Imapcli
         key.upcase
       else
         key
+      end
+    end
+
+    private
+
+    # Handle errors during stats collection
+    def handle_mailbox_error(error, skip_errors, skipped_mailboxes)
+      error_message = case error
+                      when Net::IMAP::NoResponseError
+                        error.message
+                      when Net::IMAP::ByeResponseError
+                        "Server closed connection: #{error.message}"
+                      else
+                        "#{error.class}: #{error.message}"
+                      end
+
+      if skip_errors
+        if skipped_mailboxes.is_a?(Array)
+          skipped_mailboxes << {
+            name: full_name,
+            error: error_message
+          }
+        end
+        nil
+      else
+        raise error
       end
     end
 
