@@ -71,7 +71,7 @@ module Imapcli
         negatable: false
       
       c.switch %i[skip-errors],
-        desc: 'Skip folders (IMAP mailboxes) that cannot be accessed (default: true)',
+        desc: 'Skip folders (IMAP mailboxes) that cannot be accessed',
         negatable: true,
         default_value: true
       
