@@ -69,6 +69,12 @@ module Imapcli
       c.switch %i[H human],
         desc: 'Convert byte counts to human-friendly formats',
         negatable: false
+      
+      c.switch %i[skip-errors],
+        desc: 'Skip folders (IMAP mailboxes) that cannot be accessed (default: true)',
+        negatable: true,
+        default_value: true
+      
       c.flag %i[o sort],
         desc: 'Ordered (sorted) results',
         arg_name: 'sort_property',
@@ -85,9 +91,11 @@ module Imapcli
         raise unless @validator.stats_options_valid?(options, args)
 
         progress_bar = nil
+        skipped_mailboxes = []
 
         head = ['Mailbox', 'Count', 'Total size', 'Min', 'Q1', 'Median', 'Q3', 'Max']
-        body = @command.stats(args, options) do |n|
+        
+        body = @command.stats(args, options, skipped_mailboxes) do |n|
           if progress_bar
             progress_bar.advance
           else
@@ -98,6 +106,7 @@ module Imapcli
             )
           end
         end
+        
         formatted_body = body.map do |row|
           row[0..1] + row[2..].map { |cell| format_bytes(cell, options[:human]) }
         end
@@ -128,6 +137,14 @@ module Imapcli
           # If any unknown mailboxes were requested, print an informative footer
           if body.any? { |line| line[0].start_with? Imapcli::Command.unknown_mailbox_prefix }
             @prompt.warn "#{Imapcli::Command.unknown_mailbox_prefix}unknown mailbox"
+          end
+        end
+        
+        unless skipped_mailboxes.empty?
+          @prompt.say ""
+          @prompt.warn "Skipped #{skipped_mailboxes.length} folder(s) (IMAP mailbox(es)) due to errors:"
+          skipped_mailboxes.each do |info|
+            @prompt.warn "  - #{info[:name]}: #{info[:error]}"
           end
         end
       end
