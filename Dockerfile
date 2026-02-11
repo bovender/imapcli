@@ -1,4 +1,4 @@
-FROM ruby:3.5-rc AS builder
+FROM ruby:4 AS builder
 WORKDIR /imapcli
 COPY Gemfile Gemfile.lock imapcli.gemspec .
 COPY lib/imapcli/version.rb lib/imapcli/version.rb
@@ -9,7 +9,7 @@ RUN apt-get update -qq && \
   bundle config set --local deployment true && \
   bundle install
 
-FROM ruby:3.5-rc-slim
+FROM ruby:4-slim
 LABEL maintainer="bovender@bovender.de"
 LABEL description="Command-line tool to query IMAP servers, collect stats etc."
 WORKDIR /imapcli
