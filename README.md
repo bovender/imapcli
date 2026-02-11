@@ -332,10 +332,11 @@ the `Gemfile` for other work that this tool depends on.
 
 - [@bovender](https://github.com/bovender)
 - [@n-rodriguez](https://github.com/n-rodriguez)
+- [@d4nyl0](https://github.com/d4nyl0)
 
 ## License
 
-&copy; 2017-2025 Daniel Kraus (@bovender)
+&copy; 2017-2026 Daniel Kraus (@bovender)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
