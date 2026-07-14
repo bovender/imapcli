@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    imapcli (3.1.0)
+    imapcli (3.1.1)
       activesupport (~> 8.0)
       csv
       descriptive_statistics (~> 2.5)
@@ -247,4 +247,4 @@ DEPENDENCIES
   simplecov
 
 BUNDLED WITH
-  4.0.10
+  4.0.16
